@@ -3,14 +3,21 @@ from dispatcher import dp
 import config
 import re
 from bot import BotDB
+from .choice_buttons import choice
 
 @dp.message_handler(commands = "start")
 async def start(message: types.Message):
     if (not BotDB.user_exists(message.from_user.id)):
-        BotDB.add_user(message.from_user.id)
+        # BotDB.add_user(message.from_user.id)        
+        await message.answer(text="Выберите основную валюту",
+                            reply_markup=choice)
+    else:
+        await message.reply("Добро пожаловать!")
 
-    await message.bot.send_message(message.from_user.id, "Добро пожаловать!")
-
+@dp.message_handler(commands = ("currency", "c"), commands_prefix="/!")
+async def currency(message: types.Message):
+    cmd_variants = ("/currency", "/c", "!currency", "!c")
+    value = message.text
 
 @dp.message_handler(commands = ("spent", "s", "earned", "e"), commands_prefix = "/!")
 async def record(message: types.Message):
@@ -35,17 +42,18 @@ async def record(message: types.Message):
             else:
                 await message.reply("✅ Запись о <u><b>доходе</b></u> успешно внесена!")
         else:
-            await message.reply("Не удалось определить сумму!")
+            await message.reply("❌ Не удалось определить сумму!")
     else:
-        await message.reply("Не введена сумма!")
+        await message.reply("❌ Не введена сумма!")
 
 
 @dp.message_handler(commands = ("history", "h"), commands_prefix = "/!")
 async def history(message: types.Message):
+    # Handling the command of watching all transactions in a day/week/month/year
     cmd_variants = ("/history", "/h", "!history", "!h")
     within_als = {
         "day": ("today", "day", "сегодня", "день"),
-        "week": ("week", "неделя"),
+        "week": ("week", "неделя", "неделю"),
         "month": ("month", "месяц"),
         "year": ("year", "год")
     }
@@ -74,4 +82,4 @@ async def history(message: types.Message):
 
         await message.reply(answer)
     else: 
-        await message.reply("Записей не обнаружено!")
+        await message.reply("❌ Записей не обнаружено!")
