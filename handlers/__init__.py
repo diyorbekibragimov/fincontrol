@@ -1,2 +1,2 @@
-from . import personal_actions
+from .users import actions
 from . import callbacks

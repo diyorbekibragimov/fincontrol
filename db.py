@@ -1,4 +1,7 @@
 import sqlite3
+from aiogram.types import user
+
+from dotenv import main
 
 class BotDB:
 
@@ -14,8 +17,17 @@ class BotDB:
         result = self.cursor.execute("SELECT `id` FROM `users` WHERE `user_id` = ?", (user_id,))
         return result.fetchone()[0]
 
-    def add_user(self, user_id):
-        self.cursor.execute("INSERT INTO `users` (`user_id`) VALUES (?)", (user_id,))
+    def add_user(self, user_id, main_currency):
+        self.cursor.execute("INSERT INTO `users` (`user_id`, `main_currency`) VALUES (?, ?)", (user_id, main_currency))
+        return self.conn.commit()
+    
+    def get_user_currency(self, user_id):
+        result = self.cursor.execute("SELECT `main_currency` FROM `users` WHERE `user_id` = ?", (user_id,))
+        currency = self.cursor.execute("SELECT `name` FROM `currencies` WHERE `id` = ?", (result.fetchone()[0],))
+        return currency.fetchone()[0]
+    
+    def edit_currency(self, user_id, main_currency):
+        self.cursor.execute("UPDATE `users` SET `main_currency` = ? WHERE `user_id` = ?", (main_currency, user_id))
         return self.conn.commit()
 
     def add_record(self, user_id, operation, value):
