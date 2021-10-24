@@ -1,4 +1,5 @@
 <b>About</b>
+
 Telegram bot for managing finance written entirely in Python, using the <i>aiogram</i> library
 
 <b>Features</b>
