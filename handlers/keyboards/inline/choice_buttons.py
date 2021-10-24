@@ -1,11 +1,11 @@
-from typing import Text
+from typing import ItemsView, Text
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup, ReplyKeyboardMarkup, KeyboardButton, inline_keyboard
 from .callback_data import currency
 
 choice = InlineKeyboardMarkup(
     inline_keyboard = [
         [
-            InlineKeyboardButton(text="\U0001F1FA\U0001F1F8 Американский Доллар", callback_data=currency.new(
+            InlineKeyboardButton(text="\U0001F1FA\U0001F1F8 Доллар", callback_data=currency.new(
                 item_id=1
             )),
             InlineKeyboardButton(text="\U0001F1FA\U0001F1FF Узбекский сум", callback_data=currency.new(
@@ -27,4 +27,14 @@ confirm = ReplyKeyboardMarkup(
         ]
     ],
     resize_keyboard = True
+)
+
+operation = ReplyKeyboardMarkup(
+    keyboard = [
+        [
+            KeyboardButton(text="Прибыль"),
+            KeyboardButton(text="Убыток")
+        ]
+    ],
+    resize_keyboard=True
 )
