@@ -3,9 +3,11 @@
 Telegram bot for managing finance written entirely in Python, using the <i>aiogram</i> library
 
 
+
 <b>Features</b>
 1) Manage profit and spending on a daily/weekly/monthly/yearly basis
 2) Built-in currency converter
+
 
 
 <b>Note</b>
