@@ -1,6 +1,6 @@
 from typing import ItemsView, Text
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup, ReplyKeyboardMarkup, KeyboardButton, inline_keyboard
-from .callback_data import currency
+from .callback_data import currency, convert_currency_data
 
 choice = InlineKeyboardMarkup(
     inline_keyboard = [
@@ -33,8 +33,25 @@ operation = ReplyKeyboardMarkup(
     keyboard = [
         [
             KeyboardButton(text="Прибыль"),
-            KeyboardButton(text="Убыток")
+            KeyboardButton(text="Затрата")
         ]
     ],
     resize_keyboard=True
+)
+
+convert_currency = InlineKeyboardMarkup(
+    inline_keyboard = [
+        [
+            InlineKeyboardButton(text="\U0001F1FA\U0001F1F8 Доллар", callback_data=convert_currency_data.new(
+                exchange_rate="USD"
+            )),
+            InlineKeyboardButton(text="\U0001F1FA\U0001F1FF Узбекский сум", callback_data=convert_currency_data.new(
+                exchange_rate="UZS"
+            )),
+        ], [
+            InlineKeyboardButton(text="\U0001F1F0\U0001F1EC Киргизский сом", callback_data=convert_currency_data.new(
+                exchange_rate="KGS"
+            )),
+        ]
+    ]
 )

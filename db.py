@@ -27,12 +27,12 @@ class BotDB:
         return currency.fetchone()
 
     def convert_all_records(self, user_id, prev_exrate, new_exrate, currency):
-        values = self.cursor.execute("SELECT `id`, `value` FROM `records` WHERE `user_id` = ?", (user_id,))
+        values = self.cursor.execute("SELECT `id`, `value` FROM `records` WHERE `user_id` = ?", (user_id,)).fetchall()
         for v in values:
             v = tuple(v)
             updatedValue = self.converter.convert(prev_exrate, new_exrate, v[1])
             self.cursor.execute("UPDATE `records` SET `value` = ?, `currency` = ? WHERE `id` = ?", (updatedValue, currency, v[0]))
-            self.conn.commit()
+        self.conn.commit()
     
     def edit_currency(self, user_id, main_currency, prev_exrate, new_exrate):
         self.cursor.execute("UPDATE `users` SET `main_currency` = ? WHERE `user_id` = ?", (main_currency, user_id))

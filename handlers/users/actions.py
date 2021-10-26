@@ -1,27 +1,41 @@
 from logging import BASIC_FORMAT
 from aiogram.dispatcher import FSMContext
+from aiogram.dispatcher.storage import FSMContextProxy
 from aiogram.types import Message, CallbackQuery
 from aiogram.types.reply_keyboard import ReplyKeyboardRemove
 from aiogram.dispatcher.filters.state import State, StatesGroup
 from dispatcher import dp
 from aiogram.dispatcher.filters import Text
-import re
 from bot import BotDB
 
-from handlers.keyboards.inline.choice_buttons import choice, confirm, operation
-from handlers.keyboards.inline.callback_data import currency
+from handlers.keyboards.inline.choice_buttons import choice, confirm, operation, convert_currency
+from handlers.keyboards.inline.callback_data import currency, convert_currency_data
+from converter import RealTimeCurrencyConverter
+from config import URL
+from sep import format_number
 
+
+converter = RealTimeCurrencyConverter(URL)
 
 class Form(StatesGroup):
     operation = State()
     quantity = State()
 
-def instructions():
-    text = "<b>Мои возможности:</b>\n" \
-            "/record - Записать убыток или прибыль за день\n" \
-            "/history - Просмотреть затраты и доходы\n" \
+class ConvertForm(StatesGroup):
+    from_currency = State()
+    quantity = State()
+    to_currency = State()
+
+def instructions(currency = None):
+    text = ""
+    if currency:
+        text += f"<i>Ваша основная валюта теперь - <b>{currency}</b></i>\n\n"
+    text += "<b>Мои возможности:</b>\n\n" \
+            "/record - Записать прибыль/убыток\n" \
             "/currency - Изменить основную валюту\n" \
-            "/profile - Просмотреть ваш профиль"
+            "/profile - Просмотреть ваш профиль\n" \
+            "/convert - Конвертация валют\n" \
+            "/exrate - Курс доллара"
     return text
 
 # Handling queries to choose the main curreny for user
@@ -30,37 +44,39 @@ async def process_callback_currency(query: CallbackQuery, callback_data: dict):
     await query.answer(cache_time=60)
     if (not BotDB.user_exists(query.from_user.id)):
         BotDB.add_user(user_id=query.from_user.id, main_currency = callback_data['item_id'])
+        await query.message.edit_text(text=instructions())
     else:
         currency = BotDB.get_user_currency(user_id=query.from_user.id)
         prevExrate = currency[3]
         newExrate = "USD"
         BotDB.edit_currency(user_id=query.from_user.id, main_currency=callback_data['item_id'], prev_exrate=prevExrate, new_exrate=newExrate)
-    await query.message.edit_text(text=instructions())
+        await query.message.edit_text(text=instructions(currency="Американский доллар"))
 
 @dp.callback_query_handler(currency.filter(item_id='2'))
 async def process_callback_currency(query: CallbackQuery, callback_data: dict):
     await query.answer(cache_time=60)
     if (not BotDB.user_exists(query.from_user.id)):
         BotDB.add_user(user_id=query.from_user.id, main_currency = callback_data['item_id'])
+        await query.message.edit_text(text=instructions())
     else:
         currency = BotDB.get_user_currency(user_id=query.from_user.id)
         prevExrate = currency[3]
         newExrate = "UZS"
         BotDB.edit_currency(user_id=query.from_user.id, main_currency=callback_data['item_id'], prev_exrate=prevExrate, new_exrate=newExrate)
-
-    await query.message.edit_text(text=instructions())
+        await query.message.edit_text(text=instructions(currency="Узбекский сум"))
 
 @dp.callback_query_handler(currency.filter(item_id='3'))
 async def process_callback_currency(query: CallbackQuery, callback_data: dict):
     await query.answer(cache_time=60)
     if (not BotDB.user_exists(query.from_user.id)):
         BotDB.add_user(user_id=query.from_user.id, main_currency = callback_data['item_id'])
+        await query.message.edit_text(text=instructions())
     else:
         currency = BotDB.get_user_currency(user_id=query.from_user.id)
         prevExrate = currency[3]
         newExrate = "KGS"
         BotDB.edit_currency(user_id=query.from_user.id, main_currency=callback_data['item_id'], prev_exrate=prevExrate, new_exrate=newExrate)
-    await query.message.edit_text(text=instructions())
+        await query.message.edit_text(text=instructions(currency="Киргизский сом"))
 
 # Handling all commands of bot
 @dp.message_handler(commands = "start")
@@ -69,6 +85,7 @@ async def start(message: Message):
         await message.answer(text="Выберите основную валюту",
                             reply_markup=choice)
     else:
+        await message.answer(f"Добро пожаловать, {message.from_user.username}!")
         await message.answer(text=instructions())
 
 @dp.message_handler(commands="profile", commands_prefix="/")
@@ -116,14 +133,13 @@ async def profile(message: Message):
 async def currency(message: Message):
     result = BotDB.get_user_currency(user_id=message.from_user.id)
     currency = result[1]
-    await message.answer(text=f"Ваша основная валюта - <b>{currency}</b>\n" \
+    await message.answer(text=f"Основная валюта - <b>{currency}</b>\n" \
                             "Изменить валюту?", reply_markup=confirm)
 
 @dp.message_handler(Text(equals=["✅ Да", "❌ Нет"]))
 async def handleConfirmBtn(message: Message):
     if message.text == "✅ Да":
-        message.reply_markup = ReplyKeyboardRemove()
-        await message.answer(text="Хорошо!", reply_markup=ReplyKeyboardRemove())
+        await message.answer(text="Хорошо", reply_markup=ReplyKeyboardRemove())
         await message.answer(text="Выберите основную валюту:",
                             reply_markup=choice)
     elif message.text == "❌ Нет":
@@ -148,10 +164,18 @@ async def process_operation(message: Message, state: FSMContext):
 @dp.message_handler(regexp=r"\d+(?:.\d+)?", state=Form.quantity)
 async def process_quantity(message: Message, state: FSMContext):
     operation = ""
+    res = 0.0
+    if message.text.count(",") > 0:
+        try:
+            res += format_number(message.text)
+        except ValueError:
+            return await message.reply("❌ Невозожно определить сумму.")
+    else:
+        res += round(float(message.text), 4)
     async with state.proxy() as data:
-        data["quantity"] = float(message.text.replace(",", ""))
+        data["quantity"] = res
         operation = "+" if data["operation"] == "Прибыль" else "-"
-    BotDB.add_record(message.from_user.id, operation, float(message.text))
+    BotDB.add_record(message.from_user.id, operation, res)
     await message.answer("✅ Сумма успешно записано!")
     # Finish the state
     await state.finish()
@@ -160,39 +184,94 @@ async def process_quantity(message: Message, state: FSMContext):
 async def process_record_invalid(message: Message):
     return await message.reply("❌ Невозожно определить сумму.")
 
-# @dp.message_handler(commands = ("history", "h"), commands_prefix = "/!")
-# async def history(message: Message):
-#     # Handling the command of watching all transactions in a day/week/month/year
-#     cmd_variants = ("/history", "/h", "!history", "!h")
-#     within_als = {
-#         "day": ("today", "day", "сегодня", "день"),
-#         "week": ("week", "неделя", "неделю"),
-#         "month": ("month", "месяц"),
-#         "year": ("year", "год")
-#     }
+@dp.message_handler(commands=("exrate"), commands_prefix="/")
+async def show_exrate(message: Message):
+    data = converter.show_exrate(["UZS", "KGS"])
+    text = f"\U0001F1FA\U0001F1F8 1 USD - \U0001F1FA\U0001F1FF {data[0]} UZS\n" \
+            f"\U0001F1FA\U0001F1F8 1 USD - \U0001F1F0\U0001F1EC {data[1]} KGS"
+    await message.answer(text)
 
-#     cmd = message.text
-#     for r in cmd_variants:
-#         cmd = cmd.replace(r, '').strip()
+@dp.message_handler(commands=("convert"), commands_prefix="/")
+async def convert(message: Message):
+    await ConvertForm.from_currency.set()
+    await message.answer(text="Из какой валюты?", reply_markup=convert_currency)
+
+@dp.callback_query_handler(convert_currency_data.filter(exchange_rate="USD"), state=ConvertForm.from_currency)
+async def process_from_currency(query: CallbackQuery, callback_data: dict, state: FSMContext):
+    await query.answer(cache_time=60)
+    async with state.proxy() as data:
+        data["from_currency"] = callback_data['exchange_rate']
+    await ConvertForm.next()
+    await query.message.edit_text("Введите сумму: ") 
+
+@dp.callback_query_handler(convert_currency_data.filter(exchange_rate="UZS"), state=ConvertForm.from_currency)
+async def process_from_currency(query: CallbackQuery, callback_data: dict, state: FSMContext):
+    await query.answer(cache_time=60)
+    async with state.proxy() as data:
+        data["from_currency"] = callback_data['exchange_rate']
+    await ConvertForm.next()
+    await query.message.edit_text("Введите сумму: ") 
+
+@dp.callback_query_handler(convert_currency_data.filter(exchange_rate="KGS"), state=ConvertForm.from_currency)
+async def process_from_currency(query: CallbackQuery, callback_data: dict, state: FSMContext):
+    await query.answer(cache_time=60)
+    async with state.proxy() as data:
+        data["from_currency"] = callback_data['exchange_rate']
+    await ConvertForm.next()
+    await query.message.edit_text("Введите сумму: ") 
+
+@dp.message_handler(regexp=r"\d+(?:.\d+)?", state=ConvertForm.quantity)
+async def process_quantity(message: Message, state: FSMContext):
+    amount = 0.0
+    if message.text.count(",") > 0:
+        try:
+            amount += format_number(message.text)
+        except ValueError:
+            return await message.reply("❌ Невозожно определить сумму.")
+    else:
+        amount += round(float(message.text), 4)
     
-#     within = "day" # default
-#     if(len(cmd)):
-#         for k in within_als:
-#             for als in within_als[k]:
-#                 if (als == cmd):
-#                     within = k
+    async with state.proxy() as data:
+        data["quantity"] = amount
+    await ConvertForm.next()
+    await message.reply("В какую валюту?",  reply_markup=convert_currency)
 
-#     #fetch
-#     records = BotDB.get_records(message.from_user.id, within)
+@dp.message_handler(state=ConvertForm.quantity)
+async def process_invalid_quantity(message: Message):
+    return await message.reply("❌ Невозожно определить сумму.")
 
-#     if(len(records)):
-#         answer = f"⏳ История операций за {within_als[within][-1]}\n\n"
+@dp.callback_query_handler(convert_currency_data.filter(exchange_rate="USD"), state=ConvertForm.to_currency)
+async def process_to_currency(query: CallbackQuery, callback_data: dict, state: FSMContext):
+    amount = 0.0
+    text = ""
+    async with state.proxy() as data:
+        data["to_currency"] = callback_data["exchange_rate"]
+        amount += converter.convert(data["from_currency"], data["to_currency"], data["quantity"])
+        text += "<b>Результат:</b>\n" \
+                f"<b>{data['quantity']}</b> {data['from_currency']} = <b>{amount}</b> {data['to_currency']}"
+    await query.message.edit_text(text=text)
+    await state.finish()
 
-#         for r in records:
-#             answer += "<b>" + ("➖ Расход" if not r[2] else "➕ Доход") + "</b>"
-#             answer += f' - {r[3]}'
-#             answer += f' <i>({r[4]})</i>\n'
+@dp.callback_query_handler(convert_currency_data.filter(exchange_rate="UZS"), state=ConvertForm.to_currency)
+async def process_to_currency(query: CallbackQuery, callback_data: dict, state: FSMContext):
+    amount = 0.0
+    text = ""
+    async with state.proxy() as data:
+        data["to_currency"] = callback_data["exchange_rate"]
+        amount += converter.convert(data["from_currency"], data["to_currency"], data["quantity"])
+        text += "<b>Результат:</b>\n" \
+                f"<b>{data['quantity']}</b> {data['from_currency']} = <b>{amount}</b> {data['to_currency']}"
+    await query.message.edit_text(text=text)
+    await state.finish()
 
-#         await message.answer(answer)
-#     else: 
-#         await message.answer("❌ Записей не обнаружено!")
+@dp.callback_query_handler(convert_currency_data.filter(exchange_rate="KGS"), state=ConvertForm.to_currency)
+async def process_to_currency(query: CallbackQuery, callback_data: dict, state: FSMContext):
+    amount = 0.0
+    text = ""
+    async with state.proxy() as data:
+        data["to_currency"] = callback_data["exchange_rate"]
+        amount += converter.convert(data["from_currency"], data["to_currency"], data["quantity"])
+        text += "<b>Результат:</b>\n" \
+                f"<b>{data['quantity']}</b> {data['from_currency']} = <b>{amount}</b> {data['to_currency']}"
+    await query.message.edit_text(text=text)
+    await state.finish()

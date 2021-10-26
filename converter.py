@@ -7,12 +7,13 @@ class RealTimeCurrencyConverter():
         self.currencies = self.data['rates']
     
     def convert(self, from_currency, to_currency, amount):
-        initial_amount = amount
         if from_currency != 'USD':
             amount = amount / self.currencies[from_currency]
-        amount = round(amount * self.currencies[to_currency], 2)
+        amount = round(amount * self.currencies[to_currency], 4)
         return amount
-
-if __name__ == '__main__':
-    converter = RealTimeCurrencyConverter(URL)
-    print(converter.convert("USD", "UZS", 2))
+    
+    def show_exrate(self, currencies):
+        res = []
+        for c in currencies:
+            res.append(self.currencies[c])
+        return res
