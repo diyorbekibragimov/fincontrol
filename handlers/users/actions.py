@@ -1,22 +1,18 @@
-from logging import BASIC_FORMAT
 from aiogram.dispatcher import FSMContext
-from aiogram.dispatcher.storage import FSMContextProxy
 from aiogram.types import Message, CallbackQuery
 from aiogram.types.reply_keyboard import ReplyKeyboardRemove
 from aiogram.dispatcher.filters.state import State, StatesGroup
-from dispatcher import dp
+from bot import (dp, BotDB)
 from aiogram.dispatcher.filters import Text
-from bot import BotDB
 
-from handlers.keyboards.inline.choice_buttons import choice, confirm, operation, convert_currency
-from handlers.keyboards.inline.callback_data import currency, convert_currency_data
-from converter import RealTimeCurrencyConverter
+from handlers.keyboards.inline.choice_buttons import (choice, confirm, operation, convert_currency)
+from handlers.keyboards.inline.callback_data import (currency, convert_currency_data)
+from functions import (converter as conv, sep)
 from config import URL
-from sep import Separator
 
 
-converter = RealTimeCurrencyConverter(URL)
-separator = Separator()
+converter = conv.RealTimeCurrencyConverter(URL)
+separator = sep.Separator()
 
 class Form(StatesGroup):
     operation = State()

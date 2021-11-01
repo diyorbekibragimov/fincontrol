@@ -1,3 +1,3 @@
 from aiogram import types
-from dispatcher import dp
+from bot import dp
 import config
