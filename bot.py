@@ -13,7 +13,7 @@ from db import BotDB
 # init
 BotDB = BotDB('fincontrol.db')
 loop = asyncio.get_event_loop()
-bot = Bot(token=BOT_TOKEN, parse_mode="HTML")
+bot = Bot(token=BOT_TOKEN, parse_mode="HTML", loop=loop)
 dp = Dispatcher(bot, storage=MemoryStorage())
 dp.middleware.setup(LoggingMiddleware())
 
@@ -48,7 +48,7 @@ async def on_shutdown(dp):
 
 def main():
     logging.basicConfig(level=logging.INFO)
-    app = get_new_configured_app(dispatcher=dp, path=WEBHOOK_URL_PATH)
+    app = get_new_configured_app(dispatcher=dp, path=WEBHOOK_URL)
     app.on_startup.append(on_startup)
     app.on_shutdown.append(on_shutdown)
     web.run_app(app, host=WEBAPP_HOST, port=WEBAPP_PORT)
