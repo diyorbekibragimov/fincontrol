@@ -1,4 +1,5 @@
 import logging, asyncio
+import handlers
 
 from aiogram import (Bot, Dispatcher)
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
@@ -10,8 +11,8 @@ from db import BotDB
 
 # init
 BotDB = BotDB('fincontrol.db')
-loop = asyncio.get_event_loop()
-bot = Bot(token=BOT_TOKEN, parse_mode="HTML", loop=loop)
+
+bot = Bot(token=BOT_TOKEN, parse_mode="HTML")
 dp = Dispatcher(bot, storage=MemoryStorage())
 dp.middleware.setup(LoggingMiddleware())
 
@@ -24,7 +25,6 @@ async def on_startup(dp):
     logging.warning(
         'Starting connection...')
     await bot.set_webhook(WEBHOOK_URL)
-    import handlers.users.actions
 
 async def on_shutdown(dp):
     logging.warning('Goodbye! Shutting down webhook connection')
