@@ -5,7 +5,7 @@ from aiogram.contrib.fsm_storage.memory import MemoryStorage
 from filters import (IsOwnerFilter, IsAdminFilter, MemberCanRestrictFilter)
 from aiogram.contrib.middlewares.logging import LoggingMiddleware
 from aiogram.utils.executor import start_webhook
-from config import (BOT_TOKEN, WEBHOOK_URL, WEBAPP_HOST, WEBAPP_PORT, WEBHOOK_PATH)
+from config import (BOT_TOKEN, WEBHOOK_URL, WEBAPP_HOST, WEBAPP_PORT, WEBHOOK_URL)
 from db import BotDB
 
 # init
@@ -47,7 +47,7 @@ async def on_shutdown(dp):
 
 def main():
     logging.basicConfig(level=logging.INFO)
-    start_webhook(dispatcher=dp, webhook_path=WEBHOOK_PATH, on_startup=on_startup, on_shutdown=on_shutdown,
+    start_webhook(dispatcher=dp, webhook_path=WEBHOOK_URL, on_startup=on_startup, on_shutdown=on_shutdown,
                   skip_updates=True, host=WEBAPP_HOST, port=WEBAPP_PORT)
 
 if __name__ == '__main__':
