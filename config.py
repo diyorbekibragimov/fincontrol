@@ -12,7 +12,7 @@ WEBHOOK_PATH = os.getenv("WEBHOOK_PATH")
 WEBHOOK_URL = f'{WEBHOOK_HOST}/{BOT_TOKEN}/{WEBHOOK_PATH}'
 
 WEBAPP_HOST = '0.0.0.0'
-WEBAPP_PORT = int(os.getenv('WEBAPP_PORT'))
+WEBAPP_PORT = int(os.getenv('PORT'))
 
 imported = {
     'BOT_TOKEN':BOT_TOKEN, 

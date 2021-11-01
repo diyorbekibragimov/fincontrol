@@ -23,19 +23,7 @@ dp.filters_factory.bind(MemberCanRestrictFilter)
 async def on_startup(dp):
     logging.warning(
         'Starting connection...')
-        
-    webhook = await bot.get_webhook_info()
-
-    # If URL is bad
-    if webhook.url != WEBHOOK_URL:
-        # If URL doesnt match current - remove webhook
-        if not webhook.url:
-            logging.warning("Bad URL")
-            await bot.delete_webhook()
-
-        # Set new URL for webhook
-        await bot.set_webhook(WEBHOOK_URL)
-    import handlers.users.actions
+    await bot.set_webhook(WEBHOOK_URL)
 
 async def on_shutdown(dp):
     logging.warning('Goodbye! Shutting down webhook connection')
