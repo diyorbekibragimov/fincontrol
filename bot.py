@@ -1,13 +1,11 @@
 import logging, asyncio
 
-from aiohttp import web
 from aiogram import (Bot, Dispatcher)
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
-from aiogram.dispatcher.webhook import get_new_configured_app
 from filters import (IsOwnerFilter, IsAdminFilter, MemberCanRestrictFilter)
 from aiogram.contrib.middlewares.logging import LoggingMiddleware
 from aiogram.utils.executor import start_webhook
-from config import (BOT_TOKEN, WEBHOOK_URL, WEBAPP_HOST, WEBAPP_PORT, WEBHOOK_URL_PATH)
+from config import (BOT_TOKEN, WEBHOOK_URL, WEBAPP_HOST, WEBAPP_PORT, WEBHOOK_PATH)
 from db import BotDB
 
 # init
@@ -37,6 +35,7 @@ async def on_startup(dp):
 
         # Set new URL for webhook
         await bot.set_webhook(WEBHOOK_URL)
+    import handlers.users.actions
 
 async def on_shutdown(dp):
     logging.warning('Goodbye! Shutting down webhook connection')
@@ -48,10 +47,8 @@ async def on_shutdown(dp):
 
 def main():
     logging.basicConfig(level=logging.INFO)
-    app = get_new_configured_app(dispatcher=dp, path=WEBHOOK_URL)
-    app.on_startup.append(on_startup)
-    app.on_shutdown.append(on_shutdown)
-    web.run_app(app, host=WEBAPP_HOST, port=WEBAPP_PORT)
+    start_webhook(dispatcher=dp, webhook_path=WEBHOOK_PATH, on_startup=on_startup, on_shutdown=on_shutdown,
+                  skip_updates=True, host=WEBAPP_HOST, port=WEBAPP_PORT)
 
 if __name__ == '__main__':
     main()
