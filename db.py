@@ -1,5 +1,5 @@
 import sqlite3
-from converter import RealTimeCurrencyConverter
+from functions.converter import RealTimeCurrencyConverter
 from config import URL
 
 class BotDB:
