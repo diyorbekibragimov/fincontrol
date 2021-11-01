@@ -24,6 +24,7 @@ async def on_startup(dp):
     logging.warning(
         'Starting connection...')
     await bot.set_webhook(WEBHOOK_URL)
+    import handlers.users.actions
 
 async def on_shutdown(dp):
     logging.warning('Goodbye! Shutting down webhook connection')
