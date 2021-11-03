@@ -14,6 +14,11 @@ WEBHOOK_URL = f'{WEBHOOK_HOST}{WEBHOOK_PATH}'
 WEBAPP_HOST = '0.0.0.0'
 WEBAPP_PORT = int(os.getenv('PORT'))
 
+DB_HOST = os.getenv('DB_HOST')
+DB_NAME = os.getenv('DB_NAME')
+DB_USER = os.getenv('DB_USER')
+DB_PASSWORD = os.getenv('DB_PASSWORD')
+
 imported = {
     'BOT_TOKEN':BOT_TOKEN, 
     'EXCHAGE_URL': URL,

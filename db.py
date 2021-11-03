@@ -1,12 +1,20 @@
-import sqlite3
+import psycopg2
 from functions.converter import RealTimeCurrencyConverter
-from config import URL
+from config import (URL, DB_NAME, DB_PASSWORD, DB_USER, DB_HOST)
 
 class BotDB:
 
-    def __init__(self, db_file):
-        self.conn = sqlite3.connect(db_file)
-        self.cursor = self.conn.cursor()
+    def __init__(self):
+        try:
+            self.conn = psycopg2.connect(
+                    host={DB_HOST},
+                    database={DB_NAME},
+                    user={DB_USER},
+                    password={DB_PASSWORD}
+                )
+            self.cursor = self.conn.cursor()
+        except (Exception, psycopg2.DatabaseError) as error:
+            print(error)
         self.converter = RealTimeCurrencyConverter(URL)
 
     def user_exists(self, user_id):
