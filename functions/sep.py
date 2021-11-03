@@ -12,8 +12,12 @@ class Separator():
         return round(float(res), 4)
 
     def format_repr(self, number: str):
+        extra = ""
         res = ""
         left = ""
+        if number.count("-") > 0:
+            res = res.split("-")[1]
+            extra += "-"
         if number.count(".") > 0:
             lst = number.split('.')
             number = lst[0]
@@ -28,4 +32,5 @@ class Separator():
                 res += i
         res = res[::-1]
         res += left
+        res = extra + res
         return res

@@ -1,6 +1,7 @@
 import logging
 from aiogram import (Bot, Dispatcher, executor)
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
+from aiogram.dispatcher.storage import FSMContextProxy
 from filters import (IsOwnerFilter, IsAdminFilter, MemberCanRestrictFilter)
 from aiogram.contrib.middlewares.logging import LoggingMiddleware
 from aiogram.dispatcher import FSMContext
@@ -93,8 +94,10 @@ async def process_callback_currency(query: CallbackQuery, callback_data: dict):
         await query.message.edit_text(text=instructions(currency="Киргизский сом"))
 
 # Handling all commands of bot
-@dp.message_handler(commands = "start")
-async def start(message: Message):
+@dp.message_handler(state='*', commands = "start")
+async def start(message: Message, state: FSMContext):
+    await state.finish()
+
     if (not BotDB.user_exists(message.from_user.id)):
         await message.answer(text="Выберите основную валюту",
                             reply_markup=choice)
@@ -102,8 +105,10 @@ async def start(message: Message):
         await message.answer(f"Добро пожаловать, {message.from_user.username}!")
         await message.answer(text=instructions())
 
-@dp.message_handler(commands="profile", commands_prefix="/")
-async def profile(message: Message):
+@dp.message_handler(state='*', commands="profile", commands_prefix="/")
+async def profile(message: Message, state=FSMContext):
+    await state.finish()
+
     currencyData = BotDB.get_user_currency(user_id=message.from_user.id)
     currency = currencyData[1]
     records = BotDB.get_main_records(message.from_user.id)
@@ -146,8 +151,10 @@ async def profile(message: Message):
             
     await message.answer(text)
 
-@dp.message_handler(commands = ("currency"), commands_prefix="/")
-async def currency(message: Message):
+@dp.message_handler(state='*', commands = ("currency"), commands_prefix="/")
+async def currency(message: Message, state: FSMContext):
+    await state.finish()
+
     result = BotDB.get_user_currency(user_id=message.from_user.id)
     currency = result[1]
     await message.answer(text=f"Основная валюта - <b>{currency}</b>\n" \
@@ -201,8 +208,10 @@ async def process_quantity(message: Message, state: FSMContext):
 async def process_record_invalid(message: Message):
     return await message.reply("❌ Невозожно определить сумму.")
 
-@dp.message_handler(commands=("exrate"), commands_prefix="/")
-async def show_exrate(message: Message):
+@dp.message_handler(state='*', commands=("exrate"), commands_prefix="/")
+async def show_exrate(message: Message, state: FSMContext):
+    await state.finish()
+
     data = converter.show_exrate(["UZS", "KGS"])
     uzs = separator.format_repr(str(data[0]))
     kgs = separator.format_repr(str(data[1]))
@@ -210,8 +219,10 @@ async def show_exrate(message: Message):
             f"\U0001F1FA\U0001F1F8 1 USD - \U0001F1F0\U0001F1EC {kgs} KGS"
     await message.answer(text)
 
-@dp.message_handler(commands=("convert"), commands_prefix="/")
-async def convert(message: Message):
+@dp.message_handler(state='*', commands=("convert"), commands_prefix="/")
+async def convert(message: Message, state: FSMContext):
+    await state.finish()
+    
     await ConvertForm.from_currency.set()
     await message.answer(text="Из какой валюты?", reply_markup=convert_currency)
 
