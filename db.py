@@ -1,4 +1,3 @@
-from asyncio.windows_events import NULL
 import psycopg2
 from functions.converter import RealTimeCurrencyConverter
 from config import (URL, DB_NAME, DB_PASSWORD, DB_USER, DB_HOST)
