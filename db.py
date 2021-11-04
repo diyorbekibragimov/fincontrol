@@ -15,21 +15,21 @@ class BotDB:
         self.converter = RealTimeCurrencyConverter(URL)
 
     def user_exists(self, user_id):
-        result = self.cursor.execute("SELECT id FROM users WHERE user_id = %s" % (user_id,))
-        return bool(len(result.fetchall()))
+        self.cursor.execute("SELECT id FROM users WHERE user_id = %s" % (user_id,))
+        return bool(len(self.cursor.fetchall()))
 
     def get_user_id(self, user_id):
-        result = self.cursor.execute("SELECT id FROM users WHERE user_id = %s", (user_id,))
-        return result.fetchone()[0]
+        self.cursor.execute("SELECT id FROM users WHERE user_id = %s", (user_id,))
+        return self.cursor.fetchone()[0]
 
     def add_user(self, user_id, main_currency):
         self.cursor.execute("INSERT INTO users (user_id, main_currency) VALUES (%s, %s)", (user_id, main_currency))
         return self.conn.commit()
     
     def get_user_currency(self, user_id):
-        result = self.cursor.execute("SELECT main_currency FROM users WHERE user_id = %s", (user_id,))
-        currency = self.cursor.execute("SELECT id, name, shortcut, exrate FROM currencies WHERE id = %s", (result.fetchone()[0],))
-        return currency.fetchone()
+        self.cursor.execute("SELECT main_currency FROM users WHERE user_id = %s", (user_id,))
+        self.cursor.execute("SELECT id, name, shortcut, exrate FROM currencies WHERE id = %s", (self.cursor.fetchone()[0],))
+        return self.cursor.fetchone()
 
     def convert_all_records(self, user_id, prev_exrate, new_exrate, currency):
         values = self.cursor.execute("SELECT id, value FROM records WHERE user_id = %s", (user_id,)).fetchall()
@@ -42,8 +42,8 @@ class BotDB:
     def edit_currency(self, user_id, main_currency, prev_exrate, new_exrate):
         self.cursor.execute("UPDATE users SET main_currency = %s WHERE user_id = %s", (main_currency, user_id))
         self.conn.commit()
-        user_real_id = self.cursor.execute("SELECT id FROM users WHERE user_id = %s", (user_id,)).fetchone()[0]
-        self.convert_all_records(user_real_id, prev_exrate, new_exrate, main_currency)
+        self.cursor.execute("SELECT id FROM users WHERE user_id = %s", (user_id,))
+        self.convert_all_records(self.cursor.fetchone()[0], prev_exrate, new_exrate, main_currency)
 
     def add_record(self, user_id, operation, value):
         currency = self.get_user_currency(user_id)
@@ -57,35 +57,35 @@ class BotDB:
 
     def get_main_records(self, user_id):
         context = {}
-        first = self.cursor.execute("SELECT operation, value FROM records WHERE user_id = %s AND date BETWEEN datetime('now', 'start of day') AND datetime('now', 'localtime') ORDER BY date",
+        self.cursor.execute("SELECT operation, value FROM records WHERE user_id = %s AND date BETWEEN datetime('now', 'start of day') AND datetime('now', 'localtime') ORDER BY date",
                 (self.get_user_id(user_id),))
-        context["day"] = first.fetchall()
-        second =  self.cursor.execute("SELECT operation, value FROM records WHERE user_id = %s AND date BETWEEN datetime('now', '-6 days') AND datetime('now', 'localtime') ORDER BY date",
+        context["day"] = self.cursor.fetchall()
+        self.cursor.execute("SELECT operation, value FROM records WHERE user_id = %s AND date BETWEEN datetime('now', '-6 days') AND datetime('now', 'localtime') ORDER BY date",
                 (self.get_user_id(user_id),))
-        context["week"] = second.fetchall()
-        third = self.cursor.execute("SELECT operation, value FROM records WHERE user_id = %s AND date BETWEEN datetime('now', 'start of month') AND datetime('now', 'localtime') ORDER BY date",
+        context["week"] = self.cursor.fetchall()
+        self.cursor.execute("SELECT operation, value FROM records WHERE user_id = %s AND date BETWEEN datetime('now', 'start of month') AND datetime('now', 'localtime') ORDER BY date",
                 (self.get_user_id(user_id),))
-        context["month"] =  third.fetchall()
+        context["month"] =  self.cursor.fetchall()
         return context
         
     def get_records(self, user_id, within = "*"):
         if (within == "day"):
-            result = self.cursor.execute("SELECT * FROM records WHERE user_id = %s AND date BETWEEN datetime('now', 'start of day') AND datetime('now', 'localtime') ORDER BY date",
+            self.cursor.execute("SELECT * FROM records WHERE user_id = %s AND date BETWEEN datetime('now', 'start of day') AND datetime('now', 'localtime') ORDER BY date",
                 (self.get_user_id(user_id),))
         elif(within == "week"):
-            result = self.cursor.execute("SELECT * FROM records WHERE user_id = %s AND date BETWEEN datetime('now', '-6 days') AND datetime('now', 'localtime') ORDER BY date",
+            self.cursor.execute("SELECT * FROM records WHERE user_id = %s AND date BETWEEN datetime('now', '-6 days') AND datetime('now', 'localtime') ORDER BY date",
                 (self.get_user_id(user_id),))
         elif (within == "month"):
-            result = self.cursor.execute("SELECT * FROM records WHERE user_id = %s AND date BETWEEN datetime('now', 'start of month') AND datetime('now', 'localtime') ORDER BY date",
+            self.cursor.execute("SELECT * FROM records WHERE user_id = %s AND date BETWEEN datetime('now', 'start of month') AND datetime('now', 'localtime') ORDER BY date",
                 (self.get_user_id(user_id),))
         elif (within == "year"):
-            result = self.cursor.execute("SELECT * FROM records WHERE user_id = %s AND date BETWEEN datetime('now', 'start of year') AND datetime('now', 'localtime') ORDER BY date",
+            self.cursor.execute("SELECT * FROM records WHERE user_id = %s AND date BETWEEN datetime('now', 'start of year') AND datetime('now', 'localtime') ORDER BY date",
                 (self.get_user_id(user_id),))
         else:
-            result = self.cursor.execute("SELECT * FROM records WHERE user_id = %s ORDER BY date",
+            self.cursor.execute("SELECT * FROM records WHERE user_id = %s ORDER BY date",
                 (self.get_user_id(user_id),))
 
-        return result.fetchall()
+        return self.cursor.fetchall()
 
     def close(self):
         self.conn.close()
