@@ -66,13 +66,13 @@ class BotDB:
     def get_main_records(self, user_id):
         self.conn.commit()
         context = {}
-        self.cursor.execute("SELECT operation, value FROM records WHERE user_id = '%s' AND date BETWEEN datetime('now', 'start of day') AND datetime('now', 'localtime') ORDER BY date",
+        self.cursor.execute("SELECT operation, value FROM records WHERE user_id = '%s' AND date BETWEEN date_trunc('day', CURRENT_TIMESTAMP) AND LOCALTIMESTAMP ORDER BY date",
                 (self.get_user_id(user_id),))
         context["day"] = self.cursor.fetchall()
-        self.cursor.execute("SELECT operation, value FROM records WHERE user_id = '%s' AND date BETWEEN datetime('now', '-6 days') AND datetime('now', 'localtime') ORDER BY date",
+        self.cursor.execute("SELECT operation, value FROM records WHERE user_id = '%s' AND date BETWEEN (CURRENT_DATE - INTEGER '6') AND LOCALTIMESTAMP ORDER BY date",
                 (self.get_user_id(user_id),))
         context["week"] = self.cursor.fetchall()
-        self.cursor.execute("SELECT operation, value FROM records WHERE user_id = '%s' AND date BETWEEN datetime('now', 'start of month') AND datetime('now', 'localtime') ORDER BY date",
+        self.cursor.execute("SELECT operation, value FROM records WHERE user_id = '%s' AND date BETWEEN date_trunc('month', CURRENT_TIMESTAMP) AND LOCALTIMESTAMP ORDER BY date",
                 (self.get_user_id(user_id),))
         context["month"] =  self.cursor.fetchall()
         return context
@@ -80,16 +80,16 @@ class BotDB:
     def get_records(self, user_id, within = "*"):
         self.conn.commit()
         if (within == "day"):
-            self.cursor.execute("SELECT * FROM records WHERE user_id = '%s' AND date BETWEEN datetime('now', 'start of day') AND datetime('now', 'localtime') ORDER BY date",
+            self.cursor.execute("SELECT * FROM records WHERE user_id = '%s' AND date BETWEEN date_trunc('day', CURRENT_TIMESTAMP) AND LOCALTIMESTAMP ORDER BY date",
                 (self.get_user_id(user_id),))
         elif(within == "week"):
-            self.cursor.execute("SELECT * FROM records WHERE user_id = '%s' AND date BETWEEN datetime('now', '-6 days') AND datetime('now', 'localtime') ORDER BY date",
+            self.cursor.execute("SELECT * FROM records WHERE user_id = '%s' AND date BETWEEN (CURRENT_DATE - INTEGER '6') AND LOCALTIMESTAMP ORDER BY date",
                 (self.get_user_id(user_id),))
         elif (within == "month"):
-            self.cursor.execute("SELECT * FROM records WHERE user_id = '%s' AND date BETWEEN datetime('now', 'start of month') AND datetime('now', 'localtime') ORDER BY date",
+            self.cursor.execute("SELECT * FROM records WHERE user_id = '%s' AND date BETWEEN date_trunc('month', CURRENT_TIMESTAMP) AND LOCALTIMESTAMP ORDER BY date",
                 (self.get_user_id(user_id),))
         elif (within == "year"):
-            self.cursor.execute("SELECT * FROM records WHERE user_id = '%s' AND date BETWEEN datetime('now', 'start of year') AND datetime('now', 'localtime') ORDER BY date",
+            self.cursor.execute("SELECT * FROM records WHERE user_id = '%s' AND date BETWEEN date_trunc('year', CURRENT_TIMESTAMP) AND LOCALTIMESTAMP ORDER BY date",
                 (self.get_user_id(user_id),))
         else:
             self.cursor.execute("SELECT * FROM records WHERE user_id = '%s' ORDER BY date",
