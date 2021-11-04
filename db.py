@@ -15,7 +15,7 @@ class BotDB:
         self.converter = RealTimeCurrencyConverter(URL)
 
     def user_exists(self, user_id):
-        self.cursor.commit()
+        self.conn.commit()
         self.cursor.execute("SELECT id FROM users WHERE user_id = ('%s')", (user_id,))
         return bool(len(self.cursor.fetchall()))
 
