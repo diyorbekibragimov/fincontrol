@@ -17,7 +17,7 @@ from config import URL
 from db import BotDB
 
 # init
-BotDB = BotDB('fincontrol.db')
+BotDB = BotDB()
 
 bot = Bot(token=BOT_TOKEN, parse_mode="HTML")
 dp = Dispatcher(bot, storage=MemoryStorage())
