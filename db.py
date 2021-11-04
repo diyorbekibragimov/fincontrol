@@ -1,3 +1,4 @@
+from asyncio.windows_events import NULL
 import psycopg2
 from functions.converter import RealTimeCurrencyConverter
 from config import (URL, DB_NAME, DB_PASSWORD, DB_USER, DB_HOST)
@@ -5,6 +6,8 @@ from config import (URL, DB_NAME, DB_PASSWORD, DB_USER, DB_HOST)
 class BotDB:
 
     def __init__(self):
+        self.conn = None
+        self.cursor = None
         try:
             self.conn = psycopg2.connect(
                     host={DB_HOST},
