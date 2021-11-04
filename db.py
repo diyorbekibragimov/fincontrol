@@ -23,7 +23,7 @@ class BotDB:
         return self.cursor.fetchone()[0]
 
     def add_user(self, user_id, main_currency):
-        self.cursor.execute("INSERT INTO users (user_id, main_currency) VALUES (%i, '%s')", (user_id, main_currency))
+        self.cursor.execute("INSERT INTO users (user_id, main_currency) VALUES (%i, %i)", (user_id, main_currency))
         return self.conn.commit()
     
     def get_user_currency(self, user_id):
@@ -37,7 +37,7 @@ class BotDB:
         for v in values:
             v = tuple(v)
             updatedValue = self.converter.convert(prev_exrate, new_exrate, v[1])
-            self.cursor.execute("UPDATE records SET value = '%s', currency = '%s' WHERE id = %i", (updatedValue, currency, v[0]))
+            self.cursor.execute("UPDATE records SET value = %d, currency = %i WHERE id = %i", (updatedValue, currency, v[0]))
         self.conn.commit()
     
     def edit_currency(self, user_id, main_currency, prev_exrate, new_exrate):
