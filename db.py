@@ -20,19 +20,23 @@ class BotDB:
         return bool(len(self.cursor.fetchall()))
 
     def get_user_id(self, user_id):
+        self.conn.commit()
         self.cursor.execute("SELECT id FROM users WHERE user_id = ('%s')", (user_id,))
         return self.cursor.fetchone()[0]
 
     def add_user(self, user_id, main_currency):
+        self.conn.commit()
         self.cursor.execute("INSERT INTO users (user_id, main_currency) VALUES ('%s', '%s')", (user_id, main_currency))
         return self.conn.commit()
     
     def get_user_currency(self, user_id):
+        self.conn.commit()
         self.cursor.execute("SELECT main_currency FROM users WHERE user_id = ('%s')", (user_id,))
         self.cursor.execute("SELECT id, name, shortcut, exrate FROM currencies WHERE id = ('%s')", (self.cursor.fetchone()[0],))
         return self.cursor.fetchone()
 
     def convert_all_records(self, user_id, prev_exrate, new_exrate, currency):
+        self.conn.commit()
         values = self.cursor.execute("SELECT id, value FROM records WHERE user_id = ('%s')", (user_id,))
         values = self.cursor.fetchall()
         for v in values:
@@ -42,12 +46,14 @@ class BotDB:
         self.conn.commit()
     
     def edit_currency(self, user_id, main_currency, prev_exrate, new_exrate):
+        self.conn.commit()
         self.cursor.execute("UPDATE users SET main_currency = '%s' WHERE user_id = '%s'", (main_currency, user_id))
         self.conn.commit()
         self.cursor.execute("SELECT id FROM users WHERE user_id = '%s'", (user_id,))
         self.convert_all_records(self.cursor.fetchone()[0], prev_exrate, new_exrate, main_currency)
 
     def add_record(self, user_id, operation, value):
+        self.conn.commit()
         currency = self.get_user_currency(user_id)
         currency_id = currency[0]
         self.cursor.execute("INSERT INTO records (user_id, operation, value, currency) VALUES ('%s', '%s', '%s', '%s')", 
@@ -58,6 +64,7 @@ class BotDB:
         return self.conn.commit()
 
     def get_main_records(self, user_id):
+        self.conn.commit()
         context = {}
         self.cursor.execute("SELECT operation, value FROM records WHERE user_id = '%s' AND date BETWEEN datetime('now', 'start of day') AND datetime('now', 'localtime') ORDER BY date",
                 (self.get_user_id(user_id),))
@@ -71,6 +78,7 @@ class BotDB:
         return context
         
     def get_records(self, user_id, within = "*"):
+        self.conn.commit()
         if (within == "day"):
             self.cursor.execute("SELECT * FROM records WHERE user_id = '%s' AND date BETWEEN datetime('now', 'start of day') AND datetime('now', 'localtime') ORDER BY date",
                 (self.get_user_id(user_id),))
