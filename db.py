@@ -26,7 +26,7 @@ class BotDB:
 
     def add_user(self, user_id, main_currency):
         self.conn.commit()
-        self.cursor.execute("INSERT INTO users (user_id, main_currency) VALUES ('%s', '%s')", (user_id, main_currency))
+        self.cursor.execute("INSERT INTO users (user_id, main_currency) VALUES ('%s', %s)", (user_id, main_currency))
         return self.conn.commit()
     
     def get_user_currency(self, user_id):
