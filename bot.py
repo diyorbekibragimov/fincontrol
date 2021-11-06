@@ -1,6 +1,7 @@
 import logging
 from aiogram import (Bot, Dispatcher, executor)
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
+from aiogram.dispatcher.storage import FSMContextProxy
 from filters import (IsOwnerFilter, IsAdminFilter, MemberCanRestrictFilter)
 from aiogram.contrib.middlewares.logging import LoggingMiddleware
 from aiogram.dispatcher import FSMContext
@@ -144,7 +145,7 @@ async def handleConfirmBtn(message: Message, state: FSMContext):
         await message.answer(text="✅ Отлично!", reply_markup=ReplyKeyboardRemove())
         await message.answer(text="Выберите основную валюту",
                             reply_markup=choice)
-    elif message.text == "❌ Нет":
+    else:
         await state.finish()
         await message.answer(text=instructions(), reply_markup=ReplyKeyboardRemove())
 
@@ -158,7 +159,7 @@ async def handleConfirmCurrencyButton(message: Message, state: FSMContext):
     if message.text == "✅ Да":
         await state.finish()
         await message.answer(text=instructions(), reply_markup=ReplyKeyboardRemove())
-    elif message.text == "❌ Нет":
+    else:
         await ChooseCurrency.start.set()
         async with state.proxy() as data:
             data["start"] = "change"
@@ -222,6 +223,7 @@ async def process_record_invalid(message: Message):
 async def process_operation(message: Message, state: FSMContext):
     if message.text == "❌ Отмена":
         await message.answer("✅ Операция отменена!", reply_markup=ReplyKeyboardRemove())
+        await message.answer(text=instructions())
         return await state.finish()
     async with state.proxy() as data:
         data["operation"] = message.text
@@ -268,13 +270,25 @@ async def convert(message: Message, state: FSMContext):
     await ConvertForm.from_currency.set()
     await message.answer(text="Из какой валюты?", reply_markup=convert_currency)
 
+@dp.message_handler(state=ConvertForm.from_currency)
+async def invalidConvertFormResponse(message: Message, state: FSMContext):
+    await message.answer("Вы хотите отменить операцию?", reply_markup=confirm)
+
+@dp.message_handler(Text(equals=["✅ Да", "❌ Нет"]), state=ConvertForm.from_currency)
+async def handleConfirmConvertForm(message: Message, state: FSMContext):
+    if message.text == "✅ Да":
+        await state.finish()
+        await message.answer(text=instructions(), reply_markup=ReplyKeyboardRemove())
+    else:
+        await message.answer(text="Из какой валюты?", reply_markup=convert_currency)
+
 @dp.callback_query_handler(convert_currency_data.filter(exchange_rate="USD"), state=ConvertForm.from_currency)
 async def process_from_currency(query: CallbackQuery, callback_data: dict, state: FSMContext):
     await query.answer(cache_time=60)
     async with state.proxy() as data:
         data["from_currency"] = callback_data['exchange_rate']
     await ConvertForm.next()
-    await query.message.edit_text("Введите сумму: ") 
+    await query.message.edit_text("Введите сумму") 
 
 @dp.callback_query_handler(convert_currency_data.filter(exchange_rate="UZS"), state=ConvertForm.from_currency)
 async def process_from_currency(query: CallbackQuery, callback_data: dict, state: FSMContext):
@@ -282,7 +296,7 @@ async def process_from_currency(query: CallbackQuery, callback_data: dict, state
     async with state.proxy() as data:
         data["from_currency"] = callback_data['exchange_rate']
     await ConvertForm.next()
-    await query.message.edit_text("Введите сумму: ") 
+    await query.message.edit_text("Введите сумму") 
 
 @dp.callback_query_handler(convert_currency_data.filter(exchange_rate="KGS"), state=ConvertForm.from_currency)
 async def process_from_currency(query: CallbackQuery, callback_data: dict, state: FSMContext):
@@ -290,7 +304,7 @@ async def process_from_currency(query: CallbackQuery, callback_data: dict, state
     async with state.proxy() as data:
         data["from_currency"] = callback_data['exchange_rate']
     await ConvertForm.next()
-    await query.message.edit_text("Введите сумму: ") 
+    await query.message.edit_text("Введите сумму")
 
 @dp.message_handler(regexp=r"\d+(?:.\d+)?", state=ConvertForm.quantity)
 async def process_quantity(message: Message, state: FSMContext):
@@ -299,7 +313,7 @@ async def process_quantity(message: Message, state: FSMContext):
         try:
             amount += separator.format_number(message.text)
         except ValueError:
-            return await message.reply("❌ Невозожно определить сумму.")
+            return await message.reply("❌ Невозожно определить сумму")
     else:
         amount += round(float(message.text), 2)
     
@@ -310,7 +324,19 @@ async def process_quantity(message: Message, state: FSMContext):
 
 @dp.message_handler(state=ConvertForm.quantity)
 async def process_invalid_quantity(message: Message):
-    return await message.reply("❌ Невозожно определить сумму.")
+    return await message.reply("❌ Невозожно определить сумму")
+
+@dp.message_handler(state=ConvertForm.to_currency)
+async def invalidConvertFormToCurrencyResponse(message: Message, state: FSMContext):
+    await message.answer("Вы хотите отменить операцию?", reply_markup=confirm)
+
+@dp.message_handler(Text(equals=["✅ Да", "❌ Нет"]), state=ConvertForm.to_currency)
+async def handleConfirmConvertForm(message: Message, state: FSMContext):
+    if message.text == "✅ Да":
+        await state.finish()
+        await message.answer(text=instructions(), reply_markup=ReplyKeyboardRemove())
+    else:
+        await message.answer(text="В какую валюту?", reply_markup=convert_currency)
 
 @dp.callback_query_handler(convert_currency_data.filter(exchange_rate="USD"), state=ConvertForm.to_currency)
 async def process_to_currency(query: CallbackQuery, callback_data: dict, state: FSMContext):
