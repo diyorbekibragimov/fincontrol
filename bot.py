@@ -121,7 +121,7 @@ async def profile(message: Message, state=FSMContext):
         await message.answer(text)
 
 @dp.message_handler(state='*', commands = ("currency"), commands_prefix="/")
-async def currency(message: Message, state: FSMContext):
+async def handleCurrencyCommand(message: Message, state: FSMContext):
     await state.finish()
     if (not BotDB.user_exists(message.from_user.id)):
         await message.answer(text="Выберите основную валюту",
