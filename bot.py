@@ -44,6 +44,7 @@ class ConvertForm(StatesGroup):
 class CurrencyChange(StatesGroup):
     start = State()
     end = State()
+    change = State()
 
 def instructions(currency = None):
     text = ""
@@ -193,14 +194,16 @@ async def invalidResponse(message: Message, state: FSMContext):
 
 @dp.message_handler(state=CurrencyChange.end)
 async def invalidCurrencyChange(message: Message):
+    await CurrencyChange.next()
     await message.answer("Вы хотите отменить операцию?", reply_markup=confirm)
 
-@dp.message_handler(Text(equals=["✅ Да", "❌ Нет"]), state=CurrencyChange.end)
+@dp.message_handler(Text(equals=["✅ Да", "❌ Нет"]), state=CurrencyChange.change)
 async def handleConfirmCurrencyButton(message: Message, state: FSMContext):
     if message.text == "✅ Да":
         await state.finish()
         await message.answer(text=instructions(), reply_markup=ReplyKeyboardRemove())
     elif message.text == "❌ Нет":
+        await CurrencyChange.previous()
         await message.answer("✅ Отлично!", reply_markup=ReplyKeyboardRemove())
         await message.answer("Выберите основную валюту", reply_markup=choice)
 
