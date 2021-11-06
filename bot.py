@@ -58,49 +58,6 @@ def instructions(currency = None):
             "/exrate - Курс доллара"
     return text
 
-# Handling queries to choose the main curreny for user
-@dp.callback_query_handler(currency.filter(item_id='1'))
-async def process_callback_currency(query: CallbackQuery, callback_data: dict, state: FSMContext):
-    await query.answer(cache_time=60)
-    if (not BotDB.user_exists(query.from_user.id)):
-        BotDB.add_user(user_id=query.from_user.id, main_currency = callback_data['item_id'])
-        await query.message.edit_text(text=instructions())
-    else:
-        await state.finish()
-        currency = BotDB.get_user_currency(user_id=query.from_user.id)
-        prevExrate = currency[3]
-        newExrate = "USD"
-        BotDB.edit_currency(user_id=query.from_user.id, main_currency=callback_data['item_id'], prev_exrate=prevExrate, new_exrate=newExrate)
-        await query.message.edit_text(text=instructions(currency="Американский доллар"))
-
-@dp.callback_query_handler(currency.filter(item_id='2'))
-async def process_callback_currency(query: CallbackQuery, callback_data: dict, state: FSMContext):
-    await query.answer(cache_time=60)
-    if (not BotDB.user_exists(query.from_user.id)):
-        BotDB.add_user(user_id=query.from_user.id, main_currency = callback_data['item_id'])
-        await query.message.edit_text(text=instructions())
-    else:
-        await state.finish()
-        currency = BotDB.get_user_currency(user_id=query.from_user.id)
-        prevExrate = currency[3]
-        newExrate = "UZS"
-        BotDB.edit_currency(user_id=query.from_user.id, main_currency=callback_data['item_id'], prev_exrate=prevExrate, new_exrate=newExrate)
-        await query.message.edit_text(text=instructions(currency="Узбекский сум"))
-
-@dp.callback_query_handler(currency.filter(item_id='3'))
-async def process_callback_currency(query: CallbackQuery, callback_data: dict, state: FSMContext):
-    await query.answer(cache_time=60)
-    if (not BotDB.user_exists(query.from_user.id)):
-        BotDB.add_user(user_id=query.from_user.id, main_currency = callback_data['item_id'])
-        await query.message.edit_text(text=instructions())
-    else:
-        await state.finish()
-        currency = BotDB.get_user_currency(user_id=query.from_user.id)
-        prevExrate = currency[3]
-        newExrate = "KGS"
-        BotDB.edit_currency(user_id=query.from_user.id, main_currency=callback_data['item_id'], prev_exrate=prevExrate, new_exrate=newExrate)
-        await query.message.edit_text(text=instructions(currency="Киргизский сом"))
-
 # Handling all commands of bot
 @dp.message_handler(state='*', commands = "start")
 async def start(message: Message, state: FSMContext):
@@ -273,6 +230,49 @@ async def convert(message: Message, state: FSMContext):
     else:
         await ConvertForm.from_currency.set()
         await message.answer(text="Из какой валюты?", reply_markup=convert_currency)
+
+# Handling queries to choose the main curreny for user
+@dp.callback_query_handler(currency.filter(item_id='1'))
+async def process_callback_currency(query: CallbackQuery, callback_data: dict, state: FSMContext):
+    await query.answer(cache_time=60)
+    if (not BotDB.user_exists(query.from_user.id)):
+        BotDB.add_user(user_id=query.from_user.id, main_currency = callback_data['item_id'])
+        await query.message.edit_text(text=instructions())
+    else:
+        await state.finish()
+        currency = BotDB.get_user_currency(user_id=query.from_user.id)
+        prevExrate = currency[3]
+        newExrate = "USD"
+        BotDB.edit_currency(user_id=query.from_user.id, main_currency=callback_data['item_id'], prev_exrate=prevExrate, new_exrate=newExrate)
+        await query.message.edit_text(text=instructions(currency="Американский доллар"))
+
+@dp.callback_query_handler(currency.filter(item_id='2'))
+async def process_callback_currency(query: CallbackQuery, callback_data: dict, state: FSMContext):
+    await query.answer(cache_time=60)
+    if (not BotDB.user_exists(query.from_user.id)):
+        BotDB.add_user(user_id=query.from_user.id, main_currency = callback_data['item_id'])
+        await query.message.edit_text(text=instructions())
+    else:
+        await state.finish()
+        currency = BotDB.get_user_currency(user_id=query.from_user.id)
+        prevExrate = currency[3]
+        newExrate = "UZS"
+        BotDB.edit_currency(user_id=query.from_user.id, main_currency=callback_data['item_id'], prev_exrate=prevExrate, new_exrate=newExrate)
+        await query.message.edit_text(text=instructions(currency="Узбекский сум"))
+
+@dp.callback_query_handler(currency.filter(item_id='3'))
+async def process_callback_currency(query: CallbackQuery, callback_data: dict, state: FSMContext):
+    await query.answer(cache_time=60)
+    if (not BotDB.user_exists(query.from_user.id)):
+        BotDB.add_user(user_id=query.from_user.id, main_currency = callback_data['item_id'])
+        await query.message.edit_text(text=instructions())
+    else:
+        await state.finish()
+        currency = BotDB.get_user_currency(user_id=query.from_user.id)
+        prevExrate = currency[3]
+        newExrate = "KGS"
+        BotDB.edit_currency(user_id=query.from_user.id, main_currency=callback_data['item_id'], prev_exrate=prevExrate, new_exrate=newExrate)
+        await query.message.edit_text(text=instructions(currency="Киргизский сом"))
 
 @dp.callback_query_handler(convert_currency_data.filter(exchange_rate="USD"), state=ConvertForm.from_currency)
 async def process_from_currency(query: CallbackQuery, callback_data: dict, state: FSMContext):
