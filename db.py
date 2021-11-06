@@ -41,7 +41,7 @@ class BotDB:
         values = self.cursor.fetchall()
         for v in values:
             v = tuple(v)
-            updatedValue = self.converter.convert(prev_exrate, new_exrate, v[1])
+            updatedValue = self.converter.convert(prev_exrate, new_exrate, float(v[1]))
             self.cursor.execute("UPDATE records SET value = '%s', currency = %s WHERE id = '%s'", (updatedValue, currency, v[0]))
         self.conn.commit()
     

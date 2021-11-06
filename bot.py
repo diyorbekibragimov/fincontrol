@@ -238,7 +238,7 @@ async def process_quantity(message: Message, state: FSMContext):
         except ValueError:
             return await message.reply("❌ Невозожно определить сумму")
     else:
-        res += round(float(message.text), 4)
+        res += round(float(message.text), 2)
     async with state.proxy() as data:
         data["quantity"] = res
         operation = "+" if data["operation"] == "Прибыль" else "-"
@@ -301,7 +301,7 @@ async def process_quantity(message: Message, state: FSMContext):
         except ValueError:
             return await message.reply("❌ Невозожно определить сумму.")
     else:
-        amount += round(float(message.text), 4)
+        amount += round(float(message.text), 2)
     
     async with state.proxy() as data:
         data["quantity"] = amount
