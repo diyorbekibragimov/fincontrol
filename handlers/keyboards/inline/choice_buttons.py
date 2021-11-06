@@ -32,8 +32,11 @@ confirm = ReplyKeyboardMarkup(
 operation = ReplyKeyboardMarkup(
     keyboard = [
         [
-            KeyboardButton(text="Прибыль"),
-            KeyboardButton(text="Затрата")
+            KeyboardButton(text="➕ Прибыль"),
+            KeyboardButton(text="➖ Затрата")
+        ],
+        [
+            KeyboardButton(text="❌ Отмена")
         ]
     ],
     resize_keyboard=True

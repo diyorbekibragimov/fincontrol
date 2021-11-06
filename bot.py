@@ -1,6 +1,7 @@
 import logging
 from aiogram import (Bot, Dispatcher, executor)
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
+from aiogram.dispatcher.storage import FSMContextProxy
 from filters import (IsOwnerFilter, IsAdminFilter, MemberCanRestrictFilter)
 from aiogram.contrib.middlewares.logging import LoggingMiddleware
 from aiogram.dispatcher import FSMContext
@@ -40,6 +41,10 @@ class ConvertForm(StatesGroup):
     quantity = State()
     to_currency = State()
 
+class CurrencyChange(StatesGroup):
+    start = State()
+    end = State()
+
 def instructions(currency = None):
     text = ""
     if currency:
@@ -54,12 +59,13 @@ def instructions(currency = None):
 
 # Handling queries to choose the main curreny for user
 @dp.callback_query_handler(currency.filter(item_id='1'))
-async def process_callback_currency(query: CallbackQuery, callback_data: dict):
+async def process_callback_currency(query: CallbackQuery, callback_data: dict, state: FSMContext):
     await query.answer(cache_time=60)
     if (not BotDB.user_exists(query.from_user.id)):
         BotDB.add_user(user_id=query.from_user.id, main_currency = callback_data['item_id'])
         await query.message.edit_text(text=instructions())
     else:
+        await state.finish()
         currency = BotDB.get_user_currency(user_id=query.from_user.id)
         prevExrate = currency[3]
         newExrate = "USD"
@@ -67,12 +73,13 @@ async def process_callback_currency(query: CallbackQuery, callback_data: dict):
         await query.message.edit_text(text=instructions(currency="Американский доллар"))
 
 @dp.callback_query_handler(currency.filter(item_id='2'))
-async def process_callback_currency(query: CallbackQuery, callback_data: dict):
+async def process_callback_currency(query: CallbackQuery, callback_data: dict, state: FSMContext):
     await query.answer(cache_time=60)
     if (not BotDB.user_exists(query.from_user.id)):
         BotDB.add_user(user_id=query.from_user.id, main_currency = callback_data['item_id'])
         await query.message.edit_text(text=instructions())
     else:
+        await state.finish()
         currency = BotDB.get_user_currency(user_id=query.from_user.id)
         prevExrate = currency[3]
         newExrate = "UZS"
@@ -80,12 +87,13 @@ async def process_callback_currency(query: CallbackQuery, callback_data: dict):
         await query.message.edit_text(text=instructions(currency="Узбекский сум"))
 
 @dp.callback_query_handler(currency.filter(item_id='3'))
-async def process_callback_currency(query: CallbackQuery, callback_data: dict):
+async def process_callback_currency(query: CallbackQuery, callback_data: dict, state: FSMContext):
     await query.answer(cache_time=60)
     if (not BotDB.user_exists(query.from_user.id)):
         BotDB.add_user(user_id=query.from_user.id, main_currency = callback_data['item_id'])
         await query.message.edit_text(text=instructions())
     else:
+        await state.finish()
         currency = BotDB.get_user_currency(user_id=query.from_user.id)
         prevExrate = currency[3]
         newExrate = "KGS"
@@ -157,24 +165,44 @@ async def profile(message: Message, state=FSMContext):
 @dp.message_handler(state='*', commands = ("currency"), commands_prefix="/")
 async def currency(message: Message, state: FSMContext):
     await state.finish()
-
     if (not BotDB.user_exists(message.from_user.id)):
         await message.answer(text="Выберите основную валюту",
                             reply_markup=choice)
     else:
+        await CurrencyChange.start.set()
         result = BotDB.get_user_currency(user_id=message.from_user.id)
         currency = result[1]
         await message.answer(text=f"Основная валюта - <b>{currency}</b>\n" \
                                 "Изменить валюту?", reply_markup=confirm)
 
-@dp.message_handler(Text(equals=["✅ Да", "❌ Нет"]))
-async def handleConfirmBtn(message: Message):
+@dp.message_handler(Text(equals=["✅ Да", "❌ Нет"]), state=CurrencyChange.start)
+async def handleConfirmBtn(message: Message, state: FSMContext):
     if message.text == "✅ Да":
-        await message.answer(text="Хорошо", reply_markup=ReplyKeyboardRemove())
-        await message.answer(text="Выберите основную валюту:",
+        await CurrencyChange.next()
+        await message.answer(text="✅ Отлично!", reply_markup=ReplyKeyboardRemove())
+        await message.answer(text="Выберите основную валюту",
                             reply_markup=choice)
     elif message.text == "❌ Нет":
+        await state.finish()
         await message.answer(text=instructions(), reply_markup=ReplyKeyboardRemove())
+
+@dp.message_handler(state=CurrencyChange.start)
+async def invalidResponse(message: Message, state: FSMContext):
+    await state.finish()
+    await message.answer(text=instructions(), reply_markup=ReplyKeyboardRemove())
+
+@dp.message_handler(state=CurrencyChange.end)
+async def invalidCurrencyChange(message: Message):
+    await message.answer("Вы хотите отменить операцию?", reply_markup=confirm)
+
+@dp.message_handler(Text(equals=["✅ Да", "❌ Нет"]), state=CurrencyChange.end)
+async def handleConfirmCurrencyButton(message: Message, state: FSMContext):
+    if message.text == "✅ Да":
+        await state.finish()
+        await message.answer(text=instructions(), reply_markup=ReplyKeyboardRemove())
+    elif message.text == "❌ Нет":
+        await message.answer("✅ Отлично!", reply_markup=ReplyKeyboardRemove())
+        await message.answer("Выберите основную валюту", reply_markup=choice)
 
 @dp.message_handler(commands=("record"), commands_prefix="/")
 async def record(message: Message):
@@ -183,18 +211,21 @@ async def record(message: Message):
                             reply_markup=choice)
     else:
         await Form.operation.set()
-        await message.answer("Какую операцию вы хотите выполнить:", reply_markup=operation)
+        await message.answer("Какую операцию вы хотите выполнить?", reply_markup=operation)
 
-@dp.message_handler(lambda message: message.text not in ["Прибыль", "Затрата"], state=Form.operation)
+@dp.message_handler(lambda message: message.text not in ["➕ Прибыль", "➖ Затрата", "❌ Отмена"], state=Form.operation)
 async def process_record_invalid(message: Message):
-    return await message.reply("Выберите одну из двух кнопок.")
+    return await message.reply("❌ Выберите одну из трёх кнопок")
 
 @dp.message_handler(state=Form.operation)
 async def process_operation(message: Message, state: FSMContext):
+    if message.text == "❌ Отмена":
+        await message.answer("✅ Операция отменена!", reply_markup=ReplyKeyboardRemove())
+        return await state.finish()
     async with state.proxy() as data:
         data["operation"] = message.text
     await Form.next()
-    await message.reply("Введите сумму: ",  reply_markup=ReplyKeyboardRemove())
+    await message.reply("Введите сумму",  reply_markup=ReplyKeyboardRemove())
 
 @dp.message_handler(regexp=r"\d+(?:.\d+)?", state=Form.quantity)
 async def process_quantity(message: Message, state: FSMContext):
@@ -211,7 +242,7 @@ async def process_quantity(message: Message, state: FSMContext):
         data["quantity"] = res
         operation = "+" if data["operation"] == "Прибыль" else "-"
     BotDB.add_record(message.from_user.id, operation, res)
-    await message.answer("✅ Сумма успешно записано!")
+    await message.answer("✅ Сумма успешно записана!")
     # Finish the state
     await state.finish()
 

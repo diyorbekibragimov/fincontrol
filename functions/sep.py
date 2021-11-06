@@ -16,7 +16,7 @@ class Separator():
         res = ""
         left = ""
         if number.count("-") > 0:
-            res = res.split("-")[1]
+            res = number.split("-")[1]
             extra += "-"
         if number.count(".") > 0:
             lst = number.split('.')
