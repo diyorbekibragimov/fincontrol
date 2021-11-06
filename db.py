@@ -47,7 +47,7 @@ class BotDB:
     
     def edit_currency(self, user_id, main_currency, prev_exrate, new_exrate):
         self.conn.commit()
-        self.cursor.execute("UPDATE users SET main_currency = '%s' WHERE user_id = '%s'", (main_currency, user_id))
+        self.cursor.execute("UPDATE users SET main_currency = %s WHERE user_id = '%s'", (main_currency, user_id))
         self.conn.commit()
         self.cursor.execute("SELECT id FROM users WHERE user_id = '%s'", (user_id,))
         self.convert_all_records(self.cursor.fetchone()[0], prev_exrate, new_exrate, main_currency)
