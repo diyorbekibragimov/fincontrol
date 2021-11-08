@@ -9,28 +9,11 @@ class Separator():
                 res += lst[i]
             else:
                 res += "." + lst[i]
-        return round(float(res), 4)
+        return round(float(res), 2)
 
-    def format_repr(self, number: str):
-        extra = ""
-        res = ""
-        left = ""
-        if number.count("-") > 0:
-            res = number.split("-")[1]
-            extra += "-"
-        if number.count(".") > 0:
-            lst = number.split('.')
-            number = lst[0]
-            left += '.' + lst[1]
-        number = number[::-1]
-        step = 3
-        line = [number[i:i+step] for i in range(0, len(number), step)]
-        for i in line:
-            if len(i) == 3 and i != line[-1]:
-                res += i + ','
-            else:
-                res += i
-        res = res[::-1]
-        res += left
-        res = extra + res
-        return res
+        
+
+if __name__ == "__main__":
+    sep = Separator()
+    number = input()
+    print(sep.format_number(number))
