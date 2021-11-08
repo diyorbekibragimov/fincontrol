@@ -57,7 +57,7 @@ def instructions(currency = None):
     text += "<b>Мои возможности:</b>\n\n" \
             "/record - Записать прибыль/убыток\n" \
             "/currency - Изменить основную валюту\n" \
-            "/profile - Просмотреть ваш профиль\n" \
+            "/history - Просмотреть вашу историю\n" \
             "/convert - Конвертация валют\n" \
             "/exrate - Курс доллара"
     return text
@@ -84,8 +84,8 @@ async def start(message: Message, state: FSMContext):
         await message.answer(f"Добро пожаловать, {message.from_user.username}!")
         await message.answer(text=instructions())
 
-@dp.message_handler(state='*', commands="profile", commands_prefix="/")
-async def profile(message: Message, state=FSMContext):
+@dp.message_handler(state='*', commands="history", commands_prefix="/")
+async def history(message: Message, state=FSMContext):
     await state.finish()
     currencyData = BotDB.get_user_currency(user_id=message.from_user.id)
     currency = currencyData[1]
@@ -248,6 +248,7 @@ async def process_quantity(message: Message, state: FSMContext):
         operation = "+" if data["operation"] == "Прибыль" else "-"
     BotDB.add_record(message.from_user.id, operation, res)
     await message.answer("✅ Сумма успешно записана!")
+    await message.answer(text=instructions())
     # Finish the state
     await state.finish()
 
@@ -395,6 +396,10 @@ async def handleConfirmConvertForm(message: Message, state: FSMContext):
 @dp.message_handler(state=ConvertForm.lastchange)
 async def invalidConfirmConvertFormResponse(message: Message):
     await message.answer("Вы хотите отменить операцию?")
+
+@dp.message_handler(state="*")
+async def handleAnyCase(message: Message):
+    await message.answer(text=instructions())
 
 async def on_startup(dp):
     logging.warning(
