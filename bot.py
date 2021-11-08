@@ -106,9 +106,9 @@ async def profile(message: Message, state=FSMContext):
             else: # otherwise it is spending
                 res["spending"] += float(r[1])
                 res["total"] -= float(r[1])
-        res["profit"] = separator.format_repr(str(res["profit"]))
-        res["spending"] = separator.format_repr(str(res["spending"]))
-        res["total"] = separator.format_repr(str(res["total"]))
+        res["profit"] = separator.format_number(str(res["profit"]))
+        res["spending"] = separator.format_number(str(res["spending"]))
+        res["total"] = separator.format_number(str(res["total"]))
         context[key] = res
     shortcut = BotDB.get_user_currency(message.from_user.id)
     shortcut = shortcut[2]
@@ -260,8 +260,8 @@ async def show_exrate(message: Message, state: FSMContext):
     await state.finish()
 
     data = converter.show_exrate(["UZS", "KGS"])
-    uzs = separator.format_repr(str(data[0]))
-    kgs = separator.format_repr(str(data[1]))
+    uzs = separator.format_number(str(data[0]))
+    kgs = separator.format_number(str(data[1]))
     text = f"\U0001F1FA\U0001F1F8 1 USD - \U0001F1FA\U0001F1FF {uzs} UZS\n" \
             f"\U0001F1FA\U0001F1F8 1 USD - \U0001F1F0\U0001F1EC {kgs} KGS"
     await message.answer(text)
@@ -342,8 +342,8 @@ async def process_to_currency(query: CallbackQuery, callback_data: dict, state: 
     async with state.proxy() as data:
         data["to_currency"] = callback_data["exchange_rate"]
         amount += converter.convert(data["from_currency"], data["to_currency"], data["quantity"])
-        from_quantity = separator.format_repr(str(data["quantity"]))
-        amount = separator.format_repr(str(amount))
+        from_quantity = separator.format_number(str(data["quantity"]))
+        amount = separator.format_number(str(amount))
         text += "<b>Результат:</b>\n" \
                 f"<b>{from_quantity}</b> {data['from_currency']} = <b>{amount}</b> {data['to_currency']}"
     await query.message.edit_text(text=text)
@@ -356,8 +356,8 @@ async def process_to_currency(query: CallbackQuery, callback_data: dict, state: 
     async with state.proxy() as data:
         data["to_currency"] = callback_data["exchange_rate"]
         amount += converter.convert(data["from_currency"], data["to_currency"], data["quantity"])
-        from_quantity = separator.format_repr(str(data["quantity"]))
-        amount = separator.format_repr(str(amount))
+        from_quantity = separator.format_number(str(data["quantity"]))
+        amount = separator.format_number(str(amount))
         text += "<b>Результат:</b>\n" \
                 f"<b>{from_quantity}</b> {data['from_currency']} = <b>{amount}</b> {data['to_currency']}"
     await query.message.edit_text(text=text)
@@ -370,8 +370,8 @@ async def process_to_currency(query: CallbackQuery, callback_data: dict, state: 
     async with state.proxy() as data:
         data["to_currency"] = callback_data["exchange_rate"]
         amount += converter.convert(data["from_currency"], data["to_currency"], data["quantity"])
-        from_quantity = separator.format_repr(str(data["quantity"]))
-        amount = separator.format_repr(str(amount))
+        from_quantity = separator.format_number(str(data["quantity"]))
+        amount = separator.format_number(str(amount))
         text += "<b>Результат:</b>\n" \
                 f"<b>{from_quantity}</b> {data['from_currency']} = <b>{amount}</b> {data['to_currency']}"
     await query.message.edit_text(text=text)
