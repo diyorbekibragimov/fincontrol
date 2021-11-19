@@ -173,7 +173,7 @@ async def handleConfirmCurrencyButton(message: Message, state: FSMContext):
 @dp.callback_query_handler(currency.filter(item_id='0'), state=ChooseCurrency.start)
 async def handleCancelCurrencyMain(query: CallbackQuery, state: FSMContext):
     await state.finish()
-    await query.message.answer("✅ Операция отменена!")
+    await query.message.edit_text("✅ Операция отменена!")
     await query.message.answer(text=instructions())
 
 @dp.callback_query_handler(currency.filter(item_id='1'), state=ChooseCurrency.start)
@@ -283,7 +283,7 @@ async def convert(message: Message, state: FSMContext):
 @dp.callback_query_handler(convert_currency_data.filter(exchange_rate="None"), state=ConvertForm.from_currency)
 async def handleCancelCurrency(query: CallbackQuery, state: FSMContext):
     await state.finish()
-    await query.message.answer("✅ Операция отменена!")
+    await query.message.edit_text("✅ Операция отменена!")
     await query.message.answer(text=instructions())
 
 @dp.callback_query_handler(convert_currency_data.filter(exchange_rate="USD"), state=ConvertForm.from_currency)
