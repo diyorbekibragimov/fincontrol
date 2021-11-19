@@ -62,7 +62,7 @@ convert_currency = InlineKeyboardMarkup(
     ]
 )
 
-prompt_cancel_button = InlineKeyboardButton(
+prompt_cancel_button = InlineKeyboardMarkup(
     inline_keyboard = [
         [
             InlineKeyboardButton(text="❌ Отмена", callback_data=currency.new(
