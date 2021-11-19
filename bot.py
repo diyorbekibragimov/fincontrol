@@ -147,7 +147,7 @@ async def handleConfirmBtn(message: Message, state: FSMContext):
         async with state.proxy() as data:
             data["start"] = "change"
         await message.answer(text="✅ Отлично!", reply_markup=ReplyKeyboardRemove())
-        await message.answer(text="Выберите основную валюту",
+        await message.answer(text="Выберите основную валюту\n\n* <i>если хотите отменить отперацию, напишите любое сообщение.</i>",
                             reply_markup=choice)
     else:
         await state.finish()
@@ -168,7 +168,7 @@ async def handleConfirmCurrencyButton(message: Message, state: FSMContext):
         async with state.proxy() as data:
             data["start"] = "change"
         await message.answer("✅ Отлично!", reply_markup=ReplyKeyboardRemove())
-        await message.answer("Выберите основную валюту", reply_markup=choice)
+        await message.answer("Выберите основную валюту\n\n* <i>если хотите отменить отперацию, напишите любое сообщение.</i>", reply_markup=choice)
 
 # Handling queries to choose the main curreny for user
 @dp.callback_query_handler(currency.filter(item_id='1'), state=ChooseCurrency.start)
