@@ -9,7 +9,7 @@ from aiogram.types.reply_keyboard import ReplyKeyboardRemove
 from aiogram.dispatcher.filters.state import State, StatesGroup
 from aiogram.types import Message, CallbackQuery
 from aiogram.dispatcher.filters import Text
-from handlers.keyboards.inline.choice_buttons import (choice, confirm, operation, convert_currency)
+from handlers.keyboards.inline.choice_buttons import (choice, confirm, operation, convert_currency, prompt_cancel_button)
 from handlers.keyboards.inline.callback_data import (currency, convert_currency_data)
 from config import (BOT_TOKEN, WEBHOOK_URL, WEBAPP_HOST, WEBAPP_PORT, WEBHOOK_PATH)
 from functions import (converter as conv, sep)
@@ -232,7 +232,13 @@ async def process_operation(message: Message, state: FSMContext):
     async with state.proxy() as data:
         data["operation"] = message.text
     await Form.next()
-    await message.answer("Введите сумму",  reply_markup=ReplyKeyboardRemove())
+    await message.answer("✅ Отлично!", reply_markup=ReplyKeyboardRemove())
+    await message.answer("Теперь введите сумму", reply_markup=prompt_cancel_button)
+
+@dp.callback_query_handler(currency.filter(item_id=0), state=Form.quantity)
+async def handlePromptCancel(query: CallbackQuery, state: FSMContext):
+    await state.finish()
+    await query.message.edit_text(text=instructions())
 
 @dp.message_handler(regexp=r"\d+(?:.\d+)?", state=Form.quantity)
 async def process_quantity(message: Message, state: FSMContext):
@@ -286,7 +292,7 @@ async def process_from_currency(query: CallbackQuery, callback_data: dict, state
     async with state.proxy() as data:
         data["from_currency"] = callback_data['exchange_rate']
     await ConvertForm.quantity.set()
-    await query.message.edit_text("Введите сумму") 
+    await query.message.edit_text("Введите сумму", reply_markup=prompt_cancel_button) 
 
 @dp.callback_query_handler(convert_currency_data.filter(exchange_rate="UZS"), state=ConvertForm.from_currency)
 async def process_from_currency(query: CallbackQuery, callback_data: dict, state: FSMContext):
@@ -294,7 +300,7 @@ async def process_from_currency(query: CallbackQuery, callback_data: dict, state
     async with state.proxy() as data:
         data["from_currency"] = callback_data['exchange_rate']
     await ConvertForm.quantity.set()
-    await query.message.edit_text("Введите сумму") 
+    await query.message.edit_text("Введите сумму", reply_markup=prompt_cancel_button) 
 
 @dp.callback_query_handler(convert_currency_data.filter(exchange_rate="KGS"), state=ConvertForm.from_currency)
 async def process_from_currency(query: CallbackQuery, callback_data: dict, state: FSMContext):
@@ -302,7 +308,7 @@ async def process_from_currency(query: CallbackQuery, callback_data: dict, state
     async with state.proxy() as data:
         data["from_currency"] = callback_data['exchange_rate']
     await ConvertForm.quantity.set()
-    await query.message.edit_text("Введите сумму")
+    await query.message.edit_text("Введите сумму", reply_markup=prompt_cancel_button)
 
 @dp.message_handler(state=ConvertForm.from_currency)
 async def invalidConvertFormResponse(message: Message):
@@ -322,6 +328,11 @@ async def handleConfirmConvertForm(message: Message, state: FSMContext):
 @dp.message_handler(state=ConvertForm.change)
 async def invalidConfirmFormResponse(message: Message):
     await message.answer("Вы хотите отменить операцию?")
+
+@dp.callback_query_handler(currency.filter(item_id=0), state=ConvertForm.quantity)
+async def handleCancelQuantity(querry: CallbackQuery, state: FSMContext):
+    await state.finish()
+    await querry.message.edit_text(text=instructions())
 
 @dp.message_handler(regexp=r"\d+(?:.\d+)?", state=ConvertForm.quantity)
 async def process_quantity(message: Message, state: FSMContext):
