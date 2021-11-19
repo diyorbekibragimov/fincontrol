@@ -8,13 +8,17 @@ choice = InlineKeyboardMarkup(
             InlineKeyboardButton(text="\U0001F1FA\U0001F1F8 Доллар", callback_data=currency.new(
                 item_id=1
             )),
-            InlineKeyboardButton(text="\U0001F1FA\U0001F1FF Узбекский сум", callback_data=currency.new(
+            InlineKeyboardButton(text="\U0001F1FA\U0001F1FF Cум", callback_data=currency.new(
                 item_id=2
             )),
         ], [
-            InlineKeyboardButton(text="\U0001F1F0\U0001F1EC Киргизский сом", callback_data=currency.new(
+            InlineKeyboardButton(text="\U0001F1F0\U0001F1EC Cом", callback_data=currency.new(
                 item_id=3
             )),
+        ], [
+            InlineKeyboardButton(text="❌ Отмена", callback_data=currency.new(
+                item_id=0
+            ))
         ]
     ]
 )
@@ -48,13 +52,17 @@ convert_currency = InlineKeyboardMarkup(
             InlineKeyboardButton(text="\U0001F1FA\U0001F1F8 Доллар", callback_data=convert_currency_data.new(
                 exchange_rate="USD"
             )),
-            InlineKeyboardButton(text="\U0001F1FA\U0001F1FF Узбекский сум", callback_data=convert_currency_data.new(
+            InlineKeyboardButton(text="\U0001F1FA\U0001F1FF Cум", callback_data=convert_currency_data.new(
                 exchange_rate="UZS"
             )),
         ], [
-            InlineKeyboardButton(text="\U0001F1F0\U0001F1EC Киргизский сом", callback_data=convert_currency_data.new(
+            InlineKeyboardButton(text="\U0001F1F0\U0001F1EC Cом", callback_data=convert_currency_data.new(
                 exchange_rate="KGS"
             )),
+        ], [
+            InlineKeyboardButton(text="❌ Отмена", callback_data=convert_currency_data.new(
+                exchange_rate="None"
+            ))
         ]
     ]
 )
