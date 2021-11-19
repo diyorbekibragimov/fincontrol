@@ -66,7 +66,7 @@ prompt_cancel_button = InlineKeyboardMarkup(
     inline_keyboard = [
         [
             InlineKeyboardButton(text="❌ Отмена", callback_data=currency.new(
-                item_id=0
+                item_id=4
             ))
         ]
     ]

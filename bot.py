@@ -233,9 +233,9 @@ async def process_operation(message: Message, state: FSMContext):
         data["operation"] = message.text
     await Form.next()
     await message.answer("✅ Отлично!", reply_markup=ReplyKeyboardRemove())
-    await message.answer("Теперь введите сумму", reply_markup=prompt_cancel_button)
+    await message.answer("Теперь введите сумму\n\n* <i>если хотите отменить операцию, нажмите на кнопку ниже.</i>", reply_markup=prompt_cancel_button)
 
-@dp.callback_query_handler(currency.filter(item_id=0), state=Form.quantity)
+@dp.callback_query_handler(currency.filter(item_id='4'), state=Form.quantity)
 async def handlePromptCancel(query: CallbackQuery, state: FSMContext):
     await state.finish()
     await query.message.edit_text(text=instructions())
