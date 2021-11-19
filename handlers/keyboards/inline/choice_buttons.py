@@ -51,10 +51,9 @@ convert_currency = InlineKeyboardMarkup(
             InlineKeyboardButton(text="\U0001F1FA\U0001F1FF Cум", callback_data=convert_currency_data.new(
                 exchange_rate="UZS"
             )),
-        ], [
             InlineKeyboardButton(text="\U0001F1F0\U0001F1EC Cом", callback_data=convert_currency_data.new(
                 exchange_rate="KGS"
-            )),
+            ))
         ], [
             InlineKeyboardButton(text="❌ Отмена", callback_data=convert_currency_data.new(
                 exchange_rate="None"

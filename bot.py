@@ -273,7 +273,7 @@ async def show_exrate(message: Message, state: FSMContext):
 async def convert(message: Message, state: FSMContext):
     await state.finish()
     await ConvertForm.from_currency.set()
-    await message.answer(text="Из какой валюты?", reply_markup=convert_currency)
+    await message.answer(text="Из какой валюты перевести?", reply_markup=convert_currency)
 
 @dp.callback_query_handler(convert_currency_data.filter(exchange_rate="None"), state=ConvertForm.from_currency)
 async def handleCancelCurrency(query: CallbackQuery, state: FSMContext):
@@ -337,7 +337,7 @@ async def process_quantity(message: Message, state: FSMContext):
     async with state.proxy() as data:
         data["quantity"] = amount
     await ConvertForm.next()
-    await message.reply("В какую валюту?",  reply_markup=convert_currency)
+    await message.answer("В какую валюту перевести?",  reply_markup=convert_currency)
 
 @dp.message_handler(state=ConvertForm.quantity)
 async def process_invalid_quantity(message: Message):
