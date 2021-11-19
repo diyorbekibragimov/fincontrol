@@ -292,7 +292,7 @@ async def process_from_currency(query: CallbackQuery, callback_data: dict, state
     async with state.proxy() as data:
         data["from_currency"] = callback_data['exchange_rate']
     await ConvertForm.quantity.set()
-    await query.message.edit_text("Введите сумму", reply_markup=prompt_cancel_button) 
+    await query.message.edit_text("Введите сумму\n\n* <i>если хотите отменить операцию, нажмите на кнопку ниже.</i>", reply_markup=prompt_cancel_button) 
 
 @dp.callback_query_handler(convert_currency_data.filter(exchange_rate="UZS"), state=ConvertForm.from_currency)
 async def process_from_currency(query: CallbackQuery, callback_data: dict, state: FSMContext):
@@ -300,7 +300,7 @@ async def process_from_currency(query: CallbackQuery, callback_data: dict, state
     async with state.proxy() as data:
         data["from_currency"] = callback_data['exchange_rate']
     await ConvertForm.quantity.set()
-    await query.message.edit_text("Введите сумму", reply_markup=prompt_cancel_button) 
+    await query.message.edit_text("Введите сумму\n\n* <i>если хотите отменить операцию, нажмите на кнопку ниже.</i>", reply_markup=prompt_cancel_button) 
 
 @dp.callback_query_handler(convert_currency_data.filter(exchange_rate="KGS"), state=ConvertForm.from_currency)
 async def process_from_currency(query: CallbackQuery, callback_data: dict, state: FSMContext):
@@ -308,7 +308,12 @@ async def process_from_currency(query: CallbackQuery, callback_data: dict, state
     async with state.proxy() as data:
         data["from_currency"] = callback_data['exchange_rate']
     await ConvertForm.quantity.set()
-    await query.message.edit_text("Введите сумму", reply_markup=prompt_cancel_button)
+    await query.message.edit_text("Введите сумму\n\n* <i>если хотите отменить операцию, нажмите на кнопку ниже.</i>", reply_markup=prompt_cancel_button)
+
+@dp.callback_query_handler(currency.filter(item_id='4'), state=ConvertForm.quantity)
+async def handlePromptCancel(query: CallbackQuery, state: FSMContext):
+    await state.finish()
+    await query.message.edit_text(text=instructions())
 
 @dp.message_handler(state=ConvertForm.from_currency)
 async def invalidConvertFormResponse(message: Message):
