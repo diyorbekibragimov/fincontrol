@@ -115,15 +115,15 @@ async def history(message: Message, state=FSMContext):
     shortcut = shortcut[2]
 
     text = f"✅ Основная валюта - <b>{currency}</b>\n\n" \
-            "<b>За день:</b>\n" \
+            "<b>Выписка за день:</b>\n" \
             f"➕ Доход - <b>{context['day']['profit']}</b> <i>{shortcut}</i>\n" \
             f"➖ Расход - <b>{context['day']['spending']}</b> <i>{shortcut}</i>\n" \
             f"💰 Общая сумма: <b>{context['day']['total']}</b> <i>{shortcut}</i>\n\n" \
-            "<b>За неделю:</b>\n" \
+            "<b>Выписка за Неделю:</b>\n" \
             f"➕ Доход - <b>{context['week']['profit']}</b> <i>{shortcut}</i>\n" \
             f"➖ Расход - <b>{context['week']['spending']}</b> <i>{shortcut}</i>\n" \
             f"💰 Общая сумма: <b>{context['week']['total']}</b> <i>{shortcut}</i>\n\n" \
-            "<b>За месяц:</b>\n" \
+            "<b>Выписка за Месяцв:</b>\n" \
             f"➕ Доход - <b>{context['month']['profit']}</b> <i>{shortcut}</i>\n" \
             f"➖ Расход - <b>{context['month']['spending']}</b> <i>{shortcut}</i>\n" \
             f"💰 Общая сумма: <b>{context['month']['total']}</b> <i>{shortcut}</i>\n"
