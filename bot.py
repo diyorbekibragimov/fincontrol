@@ -262,8 +262,8 @@ async def show_exrate(message: Message, state: FSMContext):
     await state.finish()
 
     data = converter.show_exrate(["UZS", "KGS"])
-    uzs = separator.format_number(str(data[0]))
-    kgs = separator.format_number(str(data[1]))
+    uzs = "{:,}".format(data[0])
+    kgs = "{:,}".format(data[1])
     text = f"\U0001F1FA\U0001F1F8 1 USD - \U0001F1FA\U0001F1FF {uzs} UZS\n" \
             f"\U0001F1FA\U0001F1F8 1 USD - \U0001F1F0\U0001F1EC {kgs} KGS"
     await message.answer(text)
@@ -344,8 +344,8 @@ async def process_to_currency(query: CallbackQuery, callback_data: dict, state: 
     async with state.proxy() as data:
         data["to_currency"] = callback_data["exchange_rate"]
         amount += converter.convert(data["from_currency"], data["to_currency"], data["quantity"])
-        from_quantity = separator.format_number(str(data["quantity"]))
-        amount = separator.format_number(str(amount))
+        from_quantity = "{:,}".format(data["quantity"])
+        amount = "{:,}".format(amount)
         text += "<b>Результат:</b>\n" \
                 f"<b>{from_quantity}</b> {data['from_currency']} = <b>{amount}</b> {data['to_currency']}"
     await query.message.edit_text(text=text)
@@ -358,8 +358,8 @@ async def process_to_currency(query: CallbackQuery, callback_data: dict, state: 
     async with state.proxy() as data:
         data["to_currency"] = callback_data["exchange_rate"]
         amount += converter.convert(data["from_currency"], data["to_currency"], data["quantity"])
-        from_quantity = separator.format_number(str(data["quantity"]))
-        amount = separator.format_number(str(amount))
+        from_quantity = "{:,}".format(data["quantity"])
+        amount = "{:,}".format(amount)
         text += "<b>Результат:</b>\n" \
                 f"<b>{from_quantity}</b> {data['from_currency']} = <b>{amount}</b> {data['to_currency']}"
     await query.message.edit_text(text=text)
