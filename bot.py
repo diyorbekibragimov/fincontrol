@@ -93,22 +93,23 @@ async def history(message: Message, state=FSMContext):
     context = dict() # declaring a variable to save all data needed to display
     
     for (key, value) in records.items():
-        res = {
-            "profit": 0.0,
-            "spending": 0.0,
-            "total": 0.0
-        }
+        profit = 0.0
+        spending = 0.0
+        total = 0.0
+
         for r in value:
             r = tuple(r)
-            if r[0] == 1: # check if operation is profit
-                res["profit"] += float(r[1])
-                res["total"] += float(r[1])
+            if r[0]: # check if operation is profit
+                profit += float(r[1])
+                total += float(r[1])
             else: # otherwise it is spending
-                res["spending"] += float(r[1])
-                res["total"] -= float(r[1])
-        res["profit"] = separator.format_number(str(res["profit"]))
-        res["spending"] = separator.format_number(str(res["spending"]))
-        res["total"] = separator.format_number(str(res["total"]))
+                spending += float(r[1])
+                total -= float(r[1])
+        res = {
+            "profit": "{:,}".format(profit),
+            "spending": "{:,}".format(spending),
+            "total": "{:,}".format(total)
+        }
         context[key] = res
     shortcut = BotDB.get_user_currency(message.from_user.id)
     shortcut = shortcut[2]

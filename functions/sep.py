@@ -11,9 +11,7 @@ class Separator():
                 res += "." + lst[i]
         return round(float(res), 2)
 
-        
-
 if __name__ == "__main__":
     sep = Separator()
     number = input()
-    print(sep.format_number(number))
+    print(sep.format_repr(number))
