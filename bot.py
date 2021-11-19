@@ -123,7 +123,7 @@ async def history(message: Message, state=FSMContext):
             f"➕ Доход - <b>{context['week']['profit']}</b> <i>{shortcut}</i>\n" \
             f"➖ Расход - <b>{context['week']['spending']}</b> <i>{shortcut}</i>\n" \
             f"💰 Общая сумма: <b>{context['week']['total']}</b> <i>{shortcut}</i>\n\n" \
-            "<b>Выписка за Месяцв:</b>\n" \
+            "<b>Выписка за Месяц:</b>\n" \
             f"➕ Доход - <b>{context['month']['profit']}</b> <i>{shortcut}</i>\n" \
             f"➖ Расход - <b>{context['month']['spending']}</b> <i>{shortcut}</i>\n" \
             f"💰 Общая сумма: <b>{context['month']['total']}</b> <i>{shortcut}</i>\n"
