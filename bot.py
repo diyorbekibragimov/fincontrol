@@ -246,7 +246,7 @@ async def process_quantity(message: Message, state: FSMContext):
         res += round(float(message.text), 2)
     async with state.proxy() as data:
         data["quantity"] = res
-        operation = "+" if data["operation"] == "Прибыль" else "-"
+        operation = "+" if data["operation"].count("Прибыль") != 0 else "-"
     BotDB.add_record(message.from_user.id, operation, res)
     await message.answer("✅ Сумма успешно записана!")
     await message.answer(text=instructions())
