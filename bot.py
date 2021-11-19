@@ -275,6 +275,11 @@ async def convert(message: Message, state: FSMContext):
     await ConvertForm.from_currency.set()
     await message.answer(text="Из какой валюты?", reply_markup=convert_currency)
 
+@dp.callback_query_handler(convert_currency_data.filter(exchange_rate="None"), state=ConvertForm.from_currency)
+async def handleCancelCurrency(query: CallbackQuery, state: FSMContext):
+    await state.finish()
+    await query.message.edit_text(text=instructions())
+
 @dp.callback_query_handler(convert_currency_data.filter(exchange_rate="USD"), state=ConvertForm.from_currency)
 async def process_from_currency(query: CallbackQuery, callback_data: dict, state: FSMContext):
     await query.answer(cache_time=60)
@@ -338,7 +343,7 @@ async def process_quantity(message: Message, state: FSMContext):
 async def process_invalid_quantity(message: Message):
     return await message.reply("❌ Невозожно определить сумму")
 
-@dp.callback_query_handler(convert_currency_data.filter(exchange_rate="None"))
+@dp.callback_query_handler(convert_currency_data.filter(exchange_rate="None"), state=ConvertForm.to_currency)
 async def handleCancelCurrency(query: CallbackQuery, state: FSMContext):
     await state.finish()
     await query.message.edit_text(text=instructions())
