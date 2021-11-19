@@ -129,6 +129,7 @@ async def history(message: Message, state=FSMContext):
             f"💰 Общая сумма: <b>{context['month']['total']}</b> <i>{shortcut}</i>\n"
             
     await message.answer(text)
+    await message.answer(text=instructions())
 
 @dp.message_handler(state='*', commands = ("currency"), commands_prefix="/")
 async def handleCurrencyCommand(message: Message, state: FSMContext):
@@ -274,11 +275,6 @@ async def convert(message: Message, state: FSMContext):
     await ConvertForm.from_currency.set()
     await message.answer(text="Из какой валюты?", reply_markup=convert_currency)
 
-@dp.callback_query_handler(convert_currency_data.filter(exchange_rate="None"), state=ConvertForm.from_currency)
-async def handleCancelCurrency(query: CallbackQuery, state: FSMContext):
-    await state.finish()
-    await query.message.edit_text(text=instructions())
-
 @dp.callback_query_handler(convert_currency_data.filter(exchange_rate="USD"), state=ConvertForm.from_currency)
 async def process_from_currency(query: CallbackQuery, callback_data: dict, state: FSMContext):
     await query.answer(cache_time=60)
@@ -341,6 +337,11 @@ async def process_quantity(message: Message, state: FSMContext):
 @dp.message_handler(state=ConvertForm.quantity)
 async def process_invalid_quantity(message: Message):
     return await message.reply("❌ Невозожно определить сумму")
+
+@dp.callback_query_handler(convert_currency_data.filter(exchange_rate="None"))
+async def handleCancelCurrency(query: CallbackQuery, state: FSMContext):
+    await state.finish()
+    await query.message.edit_text(text=instructions())
 
 @dp.callback_query_handler(convert_currency_data.filter(exchange_rate="USD"), state=ConvertForm.to_currency)
 async def process_to_currency(query: CallbackQuery, callback_data: dict, state: FSMContext):
