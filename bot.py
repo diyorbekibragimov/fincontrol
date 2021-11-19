@@ -157,8 +157,6 @@ async def invalidResponse(message: Message, state: FSMContext):
     await state.finish()
     await message.answer(text=instructions(), reply_markup=ReplyKeyboardRemove())
 
-@dp.m
-
 @dp.message_handler(Text(equals=["✅ Да", "❌ Нет"]), state=CurrencyChange.change)
 async def handleConfirmCurrencyButton(message: Message, state: FSMContext):
     if message.text == "✅ Да":
