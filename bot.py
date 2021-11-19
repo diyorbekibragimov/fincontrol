@@ -170,12 +170,6 @@ async def handleConfirmCurrencyButton(message: Message, state: FSMContext):
         await message.answer("Выберите основную валюту", reply_markup=choice)
 
 # Handling queries to choose the main curreny for user
-@dp.callback_query_handler(currency.filter(item_id='0'), state=ChooseCurrency.start)
-async def handleCancelCurrencyMain(query: CallbackQuery, state: FSMContext):
-    await state.finish()
-    await query.message.edit_text("✅ Операция отменена!")
-    await query.message.answer(text=instructions())
-
 @dp.callback_query_handler(currency.filter(item_id='1'), state=ChooseCurrency.start)
 async def process_callback_currency(query: CallbackQuery, callback_data: dict, state: FSMContext):
     await query.answer(cache_time=60)
@@ -283,8 +277,7 @@ async def convert(message: Message, state: FSMContext):
 @dp.callback_query_handler(convert_currency_data.filter(exchange_rate="None"), state=ConvertForm.from_currency)
 async def handleCancelCurrency(query: CallbackQuery, state: FSMContext):
     await state.finish()
-    await query.message.edit_text("✅ Операция отменена!")
-    await query.message.answer(text=instructions())
+    await query.message.edit_text(text=instructions())
 
 @dp.callback_query_handler(convert_currency_data.filter(exchange_rate="USD"), state=ConvertForm.from_currency)
 async def process_from_currency(query: CallbackQuery, callback_data: dict, state: FSMContext):

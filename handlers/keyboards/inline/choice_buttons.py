@@ -15,10 +15,6 @@ choice = InlineKeyboardMarkup(
             InlineKeyboardButton(text="\U0001F1F0\U0001F1EC Cом", callback_data=currency.new(
                 item_id=3
             )),
-        ], [
-            InlineKeyboardButton(text="❌ Отмена", callback_data=currency.new(
-                item_id=0
-            ))
         ]
     ]
 )
